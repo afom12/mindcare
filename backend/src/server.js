@@ -13,13 +13,31 @@ import adminRoutes from "./routes/adminRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import messagingRoutes from "./routes/messagingRoutes.js";
 import videoRoutes from "./routes/videoRoutes.js";
+import therapistRoutes from "./routes/therapistRoutes.js";
+import { apiLimiter } from "./middleware/rateLimit.js";
 
 connectDB(); // this connects MongoDB
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+const isProd = process.env.NODE_ENV === "production";
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim())
+  : ["http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:5173"];
+
+app.use(
+  cors({
+    origin: isProd
+      ? (origin, cb) => {
+          if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+          cb(null, false);
+        }
+      : true,
+    credentials: true
+  })
+);
+app.use(express.json({ limit: "10mb" }));
+app.use("/api", apiLimiter);
 
 app.use("/uploads", express.static("uploads"));
 
@@ -32,6 +50,7 @@ app.use("/api/v1", resourceRoutes);
 app.use("/api/v1", bookingRoutes);
 app.use("/api/v1", messagingRoutes);
 app.use("/api/v1", videoRoutes);
+app.use("/api/v1/therapist", therapistRoutes);
 app.use("/api/v1", adminRoutes);
 
 app.get("/", (req, res) => {

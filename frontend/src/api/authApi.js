@@ -9,4 +9,8 @@ export const registerTherapist = (formData) =>
     headers: { "Content-Type": "multipart/form-data" }
   });
 
+export const forgotPassword = (data) => API.post("/v1/auth/forgot-password", data);
+
+export const resetPassword = (token, data) => API.post(`/v1/auth/reset-password/${token}`, data);
+
 export const updateProfile = (data) => API.patch("/v1/auth/profile", data);

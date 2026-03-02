@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import { useAuth } from "../context/AuthContext";
 import { bookingApi } from "../api/bookingApi";
-import { Calendar, Loader2, ArrowRight, UserCheck, MessageSquare, Video } from "lucide-react";
+import { Calendar, Loader2, ArrowRight, UserCheck, MessageSquare, Video, FileText } from "lucide-react";
 
 const STATUS_LABELS = {
   pending: "Pending",
@@ -25,6 +25,7 @@ export default function Bookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState(null);
+  const [notesModal, setNotesModal] = useState(null);
 
   const isTherapist = user?.role === "therapist";
 
@@ -46,6 +47,22 @@ export default function Bookings() {
       );
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update");
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const handleSaveNotes = async (id, notes) => {
+    setUpdating(id);
+    setError("");
+    try {
+      const { data } = await bookingApi.updateBookingNotes(id, notes);
+      setBookings((prev) =>
+        prev.map((b) => (b._id === id ? data.booking : b))
+      );
+      setNotesModal(null);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to save notes");
     } finally {
       setUpdating(null);
     }
@@ -119,7 +136,10 @@ export default function Bookings() {
                         booking={b}
                         isTherapist={isTherapist}
                         onStatusUpdate={handleStatusUpdate}
+                        onSaveNotes={handleSaveNotes}
                         updating={updating}
+                        notesModal={notesModal}
+                        setNotesModal={setNotesModal}
                       />
                     ))}
                   </div>
@@ -135,7 +155,10 @@ export default function Bookings() {
                         booking={b}
                         isTherapist={isTherapist}
                         onStatusUpdate={handleStatusUpdate}
+                        onSaveNotes={handleSaveNotes}
                         updating={updating}
+                        notesModal={notesModal}
+                        setNotesModal={setNotesModal}
                         past
                       />
                     ))}
@@ -150,7 +173,7 @@ export default function Bookings() {
   );
 }
 
-function BookingCard({ booking, isTherapist, onStatusUpdate, updating, past }) {
+function BookingCard({ booking, isTherapist, onStatusUpdate, onSaveNotes, updating, notesModal, setNotesModal, past }) {
   const other = isTherapist ? booking.userId : booking.therapistId;
   const therapistId = booking.therapistId?._id ?? booking.therapistId;
   const scheduled = new Date(booking.scheduledAt);
@@ -225,6 +248,15 @@ function BookingCard({ booking, isTherapist, onStatusUpdate, updating, past }) {
             </Link>
           </>
         )}
+        {isTherapist && past && booking.status === "completed" && (
+          <button
+            onClick={() => setNotesModal({ id: booking._id, notes: booking.notes || "" })}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-amber-200 text-amber-700 rounded-lg text-sm hover:bg-amber-50"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            {booking.notes?.trim() ? "Edit notes" : "Add notes"}
+          </button>
+        )}
         {!isTherapist && therapistId && (
           <Link
             to={`/messages?therapist=${therapistId}`}
@@ -235,6 +267,37 @@ function BookingCard({ booking, isTherapist, onStatusUpdate, updating, past }) {
           </Link>
         )}
       </div>
+
+      {notesModal?.id === booking._id && (
+        <div className="mt-4 pt-4 border-t border-slate-100">
+          <label className="block text-sm font-medium text-slate-700 mb-2">Session notes</label>
+          <textarea
+            defaultValue={notesModal.notes}
+            rows={4}
+            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-200"
+            placeholder="Subjective, Objective, Assessment, Plan..."
+            id={`notes-${booking._id}`}
+          />
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={() => {
+                const notes = document.getElementById(`notes-${booking._id}`)?.value || "";
+                onSaveNotes(booking._id, notes);
+              }}
+              disabled={updating === booking._id}
+              className="px-3 py-1.5 bg-teal-600 text-white rounded-lg text-sm hover:bg-teal-700 disabled:opacity-50"
+            >
+              {updating === booking._id ? "Saving..." : "Save"}
+            </button>
+            <button
+              onClick={() => setNotesModal(null)}
+              className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-sm hover:bg-slate-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

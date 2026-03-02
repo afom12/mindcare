@@ -19,9 +19,13 @@ API.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
+      const isAuthPage = window.location.pathname === "/login" || window.location.pathname === "/register";
+      if (!isAuthPage) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        const from = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = from ? `/login?from=${from}` : "/login";
+      }
     }
     return Promise.reject(err);
   }

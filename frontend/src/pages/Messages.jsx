@@ -19,6 +19,7 @@ export default function Messages() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const therapistId = searchParams.get("therapist");
+  const clientId = searchParams.get("client");
   const [conversations, setConversations] = useState([]);
   const [selected, setSelected] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -68,6 +69,30 @@ export default function Messages() {
       }
     }
   }, [therapistId, isTherapist, conversations]);
+
+  useEffect(() => {
+    if (clientId && isTherapist && conversations.length >= 0) {
+      const existing = conversations.find(
+        (c) => (c.userId?._id || c.userId)?.toString() === clientId
+      );
+      if (existing) {
+        setSelected(existing);
+        setSearchParams({});
+      } else {
+        messagingApi
+          .getOrCreateConversationWithClient(clientId)
+          .then(({ data }) => {
+            setSelected(data.conversation);
+            setConversations((prev) => {
+              const has = prev.some((p) => p._id === data.conversation._id);
+              return has ? prev : [{ ...data.conversation, other: data.conversation.userId, lastMessage: null, unreadCount: 0 }, ...prev];
+            });
+            setSearchParams({});
+          })
+          .catch(() => setError("Failed to start conversation"));
+      }
+    }
+  }, [clientId, isTherapist, conversations]);
 
   const loadMessages = (convId) => {
     if (!convId) return;

@@ -1,3 +1,4 @@
+import { Navigate } from "react-router-dom";
 import { useChat } from "../context/ChatContext";
 import { useAuth } from "../context/AuthContext";
 import { useMood } from "../context/MoodContext";
@@ -9,6 +10,10 @@ import ChatInput from "../components/chat/ChatInput";
 
 export default function Chat() {
   const { user } = useAuth();
+
+  if (user?.role === "therapist") {
+    return <Navigate to="/dashboard" replace />;
+  }
   const { moods } = useMood();
   const { messages, loading, loadingHistory, error, sendMessage, loadChatHistory, clearError } = useChat();
   const Layout = user ? AppLayout : AnonymousChatLayout;

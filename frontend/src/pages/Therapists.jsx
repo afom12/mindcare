@@ -10,6 +10,8 @@ export default function Therapists() {
   const [error, setError] = useState("");
   const [bookingModal, setBookingModal] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   useEffect(() => {
     bookingApi
@@ -21,22 +23,41 @@ export default function Therapists() {
 
   const handleBook = (therapist) => {
     setBookingModal({ therapist });
+    setAvailableSlots([]);
+  };
+
+  const handleDateChange = (date) => {
+    if (!bookingModal?.therapist || !date) {
+      setAvailableSlots([]);
+      return;
+    }
+    setSlotsLoading(true);
+    bookingApi
+      .getAvailableSlots(bookingModal.therapist._id, date)
+      .then(({ data }) => setAvailableSlots(data.slots || []))
+      .catch(() => setAvailableSlots([]))
+      .finally(() => setSlotsLoading(false));
   };
 
   const handleSubmitBooking = async (e) => {
     e.preventDefault();
     if (!bookingModal) return;
     const form = e.target;
-    const date = form.date.value;
-    const time = form.time.value;
+    const date = form.date?.value;
+    const timeSlot = form.timeSlot?.value;
     const notes = form.notes?.value || "";
 
-    if (!date || !time) {
+    let scheduledAt;
+    if (timeSlot) {
+      scheduledAt = new Date(timeSlot);
+    } else if (date) {
+      const time = form.time?.value || "09:00";
+      scheduledAt = new Date(`${date}T${time}`);
+    } else {
       setError("Please select date and time");
       return;
     }
 
-    const scheduledAt = new Date(`${date}T${time}`);
     if (scheduledAt <= new Date()) {
       setError("Please select a future date and time");
       return;
@@ -137,18 +158,46 @@ export default function Therapists() {
                     name="date"
                     required
                     min={new Date().toISOString().slice(0, 10)}
+                    onChange={(e) => handleDateChange(e.target.value)}
                     className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Time</label>
-                  <input
-                    type="time"
-                    name="time"
-                    required
-                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm"
-                  />
-                </div>
+                {availableSlots.length > 0 ? (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Available times
+                    </label>
+                    <select
+                      name="timeSlot"
+                      required
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm"
+                    >
+                      <option value="">Select a time</option>
+                      {availableSlots.map((slot) => (
+                        <option key={slot.start} value={slot.start}>
+                          {slot.time}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : slotsLoading ? (
+                  <p className="text-sm text-slate-500">Loading available times...</p>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Time</label>
+                    <input
+                      type="time"
+                      name="time"
+                      required
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm"
+                    />
+                    {availableSlots.length === 0 && !slotsLoading && (
+                      <p className="text-xs text-slate-500 mt-1">
+                        Select a date to see available times, or pick any time if none are set.
+                      </p>
+                    )}
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">
                     Notes (optional)

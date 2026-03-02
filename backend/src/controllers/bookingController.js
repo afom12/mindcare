@@ -166,3 +166,33 @@ export const updateBookingStatus = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const updateBookingNotes = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { notes } = req.body;
+    const userId = req.user._id;
+
+    const booking = await Booking.findById(id);
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+
+    const isTherapist = req.user.role === "therapist" && booking.therapistId.toString() === userId.toString();
+    if (!isTherapist) {
+      return res.status(403).json({ message: "Only the therapist can add session notes" });
+    }
+
+    if (booking.status !== "completed") {
+      return res.status(400).json({ message: "Notes can only be added for completed sessions" });
+    }
+
+    booking.notes = typeof notes === "string" ? notes : "";
+    await booking.save();
+    await booking.populate("therapistId", "name email");
+    await booking.populate("userId", "name email");
+
+    res.json({ booking });
+  } catch (error) {
+    console.error("UPDATE BOOKING NOTES ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+};

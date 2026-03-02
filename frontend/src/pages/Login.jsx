@@ -8,7 +8,10 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const from = location.state?.from?.pathname || "/dashboard";
+  const fromSearch = new URLSearchParams(location.search).get("from");
+  const decoded = fromSearch ? decodeURIComponent(fromSearch) : null;
+  const safeFrom = decoded && decoded.startsWith("/") && !decoded.startsWith("//") ? decoded : null;
+  const from = safeFrom || location.state?.from?.pathname || "/dashboard";
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -60,9 +63,9 @@ export default function Login() {
               <p className="text-sm text-slate-400 mt-1">sign in to continue</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {error && (
-                <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl">
+                <div role="alert" className="p-3 bg-rose-50 border border-rose-100 rounded-xl">
                   <p className="text-rose-600 text-sm text-center">{error}</p>
                 </div>
               )}
@@ -72,7 +75,10 @@ export default function Login() {
                 placeholder="email"
                 required
                 value={form.email}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition text-sm placeholder:text-slate-400 bg-white"
+                autoComplete="email"
+                aria-label="Email"
+                aria-invalid={!!error}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus-visible:ring-2 transition text-sm placeholder:text-slate-400 bg-white"
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
 
@@ -81,7 +87,10 @@ export default function Login() {
                 placeholder="password"
                 required
                 value={form.password}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition text-sm placeholder:text-slate-400 bg-white"
+                autoComplete="current-password"
+                aria-label="Password"
+                aria-invalid={!!error}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus-visible:ring-2 transition text-sm placeholder:text-slate-400 bg-white"
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
 
@@ -101,6 +110,12 @@ export default function Login() {
                   className="block text-sm text-slate-500 hover:text-slate-700 transition-colors"
                 >
                   try anonymously →
+                </Link>
+                <Link
+                  to="/forgot-password"
+                  className="block text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                >
+                  forgot password?
                 </Link>
                 <Link
                   to="/register"

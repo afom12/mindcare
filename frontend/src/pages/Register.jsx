@@ -68,9 +68,9 @@ export default function Register() {
               <p className="text-sm text-slate-400 mt-1">join our gentle community</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
               {error && (
-                <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl">
+                <div role="alert" className="p-3 bg-rose-50 border border-rose-100 rounded-xl">
                   <p className="text-rose-600 text-sm text-center">{error}</p>
                 </div>
               )}
@@ -80,7 +80,9 @@ export default function Register() {
                 placeholder="full name"
                 required
                 value={form.name}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition text-sm placeholder:text-slate-400 bg-white"
+                autoComplete="name"
+                aria-label="Full name"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus-visible:ring-2 transition text-sm placeholder:text-slate-400 bg-white"
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
 
@@ -89,7 +91,9 @@ export default function Register() {
                 placeholder="email"
                 required
                 value={form.email}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition text-sm placeholder:text-slate-400 bg-white"
+                autoComplete="email"
+                aria-label="Email"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus-visible:ring-2 transition text-sm placeholder:text-slate-400 bg-white"
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
 
@@ -99,7 +103,10 @@ export default function Register() {
                 required
                 minLength={6}
                 value={form.password}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition text-sm placeholder:text-slate-400 bg-white"
+                autoComplete="new-password"
+                aria-label="Password"
+                aria-describedby="password-hint"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 focus-visible:ring-2 transition text-sm placeholder:text-slate-400 bg-white"
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
               <p className="text-xs text-slate-400 ml-1">minimum 6 characters</p>
@@ -109,10 +116,11 @@ export default function Register() {
                   type="checkbox"
                   checked={isTherapist}
                   onChange={(e) => {
-                  setIsTherapist(e.target.checked);
-                  if (!e.target.checked) setLicenseDocument(null);
-                }}
-                  className="rounded border-slate-300"
+                    setIsTherapist(e.target.checked);
+                    if (!e.target.checked) setLicenseDocument(null);
+                  }}
+                  aria-label="I am a professional therapist"
+                  className="rounded border-slate-300 focus:ring-2 focus:ring-slate-400"
                 />
                 <span className="text-sm text-slate-600">I&apos;m a professional therapist</span>
               </label>

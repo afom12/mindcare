@@ -33,7 +33,9 @@ const userSchema = new mongoose.Schema(
     license: { type: String, default: "" },
     licenseType: { type: String, default: "" },
     licenseDocumentUrl: { type: String, default: "" },
-    rejectionReason: { type: String, default: "" }
+    rejectionReason: { type: String, default: "" },
+    resetPasswordToken: { type: String, default: null },
+    resetPasswordExpires: { type: Date, default: null }
   },
   { timestamps: true }
 );

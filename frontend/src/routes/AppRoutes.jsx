@@ -4,6 +4,8 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import Onboarding from "../pages/Onboarding";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 import Chat from "../pages/Chat";
 import Dashboard from "../pages/Dashboard";
 import Profile from "../pages/Profile";
@@ -17,6 +19,10 @@ import Messages from "../pages/Messages";
 import VideoCall from "../pages/VideoCall";
 import Admin from "../pages/Admin";
 import AdminRoute from "../components/AdminRoute";
+import TherapistRoute from "../components/TherapistRoute";
+import TherapistSchedule from "../pages/TherapistSchedule";
+import ClientList from "../pages/ClientList";
+import ClientDetail from "../pages/ClientDetail";
 
 function LandingPage() {
   const { user } = useAuth();
@@ -31,6 +37,8 @@ export default function AppRoutes() {
       <Route path="/onboarding" element={<Onboarding />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       <Route path="/chat" element={<Chat />} />
       <Route
@@ -111,6 +119,30 @@ export default function AppRoutes() {
           <ProtectedRoute>
             <VideoCall />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/therapist/schedule"
+        element={
+          <TherapistRoute>
+            <TherapistSchedule />
+          </TherapistRoute>
+        }
+      />
+      <Route
+        path="/clients"
+        element={
+          <TherapistRoute>
+            <ClientList />
+          </TherapistRoute>
+        }
+      />
+      <Route
+        path="/clients/:clientId"
+        element={
+          <TherapistRoute>
+            <ClientDetail />
+          </TherapistRoute>
         }
       />
       <Route

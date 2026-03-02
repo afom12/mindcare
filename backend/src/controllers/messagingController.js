@@ -82,6 +82,37 @@ export const getOrCreateConversation = async (req, res) => {
   }
 };
 
+export const getOrCreateConversationWithClient = async (req, res) => {
+  try {
+    const therapistId = req.user._id;
+    const { clientId } = req.params;
+
+    if (req.user.role !== "therapist") {
+      return res.status(403).json({ message: "Only therapists can start conversations with clients" });
+    }
+
+    const client = await User.findOne({ _id: clientId, role: "user" });
+    if (!client) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+
+    let conv = await Conversation.findOne({
+      userId: clientId,
+      therapistId
+    }).populate("userId", "name email");
+
+    if (!conv) {
+      conv = await Conversation.create({ userId: clientId, therapistId });
+      await conv.populate("userId", "name email");
+    }
+
+    res.json({ conversation: conv });
+  } catch (error) {
+    console.error("GET OR CREATE CONVERSATION WITH CLIENT ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getMessages = async (req, res) => {
   try {
     const userId = req.user._id;

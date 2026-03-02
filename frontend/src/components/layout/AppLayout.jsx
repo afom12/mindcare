@@ -12,6 +12,7 @@ import {
   Menu,
   Shield,
   Calendar,
+  CalendarClock,
   UserCheck,
   Mail
 } from "lucide-react";
@@ -26,12 +27,18 @@ export default function AppLayout({ children }) {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Chat", href: "/chat", icon: MessageCircle },
-    { name: "Mood Tracker", href: "/mood", icon: Heart },
+    ...(user?.role !== "therapist" ? [{ name: "Chat", href: "/chat", icon: MessageCircle }] : []),
+    ...(user?.role !== "therapist" ? [{ name: "Mood Tracker", href: "/mood", icon: Heart }] : []),
     { name: "Resources", href: "/resources", icon: BookOpen },
     { name: "Community", href: "/community", icon: Users },
     ...(user?.role === "user" ? [{ name: "Book Session", href: "/therapists", icon: UserCheck }] : []),
     { name: user?.role === "therapist" ? "My Sessions" : "My Bookings", href: "/bookings", icon: Calendar },
+    ...(user?.role === "therapist"
+      ? [
+          { name: "Schedule", href: "/therapist/schedule", icon: CalendarClock },
+          { name: "My Clients", href: "/clients", icon: Users }
+        ]
+      : []),
     { name: "Messages", href: "/messages", icon: Mail },
     ...(user?.role === "admin" ? [{ name: "Admin", href: "/admin", icon: Shield }] : [])
   ];
