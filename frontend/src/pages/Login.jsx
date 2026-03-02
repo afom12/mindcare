@@ -1,25 +1,32 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { authAPI } from "../api/api";
 import { useAuth } from "../context/AuthContext";
+import { loginUser } from "../api/authApi";
+import { chatApi, ANON_SESSION_KEY } from "../api/chatApi";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/chat";
+  const { login } = useAuth();
+  const from = location.state?.from?.pathname || "/dashboard";
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const { data } = await authAPI.login({ email, password });
-      login(data.user, data.token);
+      const res = await loginUser(form);
+      login(res.data);
+      const sessionId = localStorage.getItem(ANON_SESSION_KEY);
+      if (sessionId) {
+        try {
+          await chatApi.migrateChat(sessionId);
+        } catch (_) {}
+        localStorage.removeItem(ANON_SESSION_KEY);
+      }
       navigate(from, { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Login failed. Please try again.");
@@ -29,65 +36,84 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-50 via-white to-cyan-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-teal-800">MindCare AI</h1>
-          <p className="text-slate-600 mt-1">Your mental wellness companion</p>
+    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+      {/* Left side */}
+      <div className="lg:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
+        <p className="text-sm font-medium text-slate-400 tracking-wider mb-12">MINDCARE</p>
+        <div className="space-y-8">
+          <div className="text-8xl mb-6">🫧</div>
+          <h1 className="text-5xl lg:text-6xl font-light text-slate-800 tracking-tight">
+            welcome back.
+          </h1>
+          <p className="text-lg text-slate-500 max-w-sm leading-relaxed">
+            we&apos;ve missed you — continue where you left off
+          </p>
         </div>
+      </div>
 
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-8 border border-slate-100">
-          <h2 className="text-xl font-semibold text-slate-800 mb-6">Sign in</h2>
+      {/* Right side - Form */}
+      <div className="lg:w-1/2 flex items-center justify-center p-8 lg:p-16">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-light text-slate-800">welcome back</h2>
+              <p className="text-sm text-slate-400 mt-1">sign in to continue</p>
+            </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
-                {error}
-              </div>
-            )}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl">
+                  <p className="text-rose-600 text-sm text-center">{error}</p>
+                </div>
+              )}
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Email
-              </label>
               <input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email"
                 required
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition"
-                placeholder="you@example.com"
+                value={form.email}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition text-sm placeholder:text-slate-400 bg-white"
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Password
-              </label>
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                placeholder="password"
                 required
-                className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition"
-                placeholder="••••••••"
+                value={form.password}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 transition text-sm placeholder:text-slate-400 bg-white"
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-lg bg-teal-600 hover:bg-teal-700 text-white font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Signing in..." : "Sign in"}
-            </button>
-          </form>
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-slate-800 text-white py-3 px-6 rounded-xl font-medium text-sm tracking-wide hover:bg-slate-700 transition-colors disabled:opacity-50"
+                >
+                  {loading ? "a moment..." : "sign in →"}
+                </button>
+              </div>
 
-          <p className="mt-6 text-center text-slate-600 text-sm">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-teal-600 hover:text-teal-700 font-medium">
-              Sign up
-            </Link>
+              <div className="text-center pt-2 space-y-1">
+                <Link
+                  to="/chat"
+                  className="block text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                >
+                  try anonymously →
+                </Link>
+                <Link
+                  to="/register"
+                  className="block text-sm text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  new here? create account
+                </Link>
+              </div>
+            </form>
+          </div>
+
+          <p className="text-xs text-center text-slate-400 mt-6">
+            a gentle companion, not a therapist
           </p>
         </div>
       </div>

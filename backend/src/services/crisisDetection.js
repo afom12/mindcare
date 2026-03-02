@@ -9,15 +9,20 @@ const CRISIS_KEYWORDS = [
   "kill my self",
   "killing my self",
   "suicide",
+  "suicidal",
   "end my life",
   "want to die",
+  "want to kill",
   "self harm",
   "self-harm",
   "hurt myself",
   "take my life",
   "end it all",
+  "end myself",
   "no reason to live",
-  "better off dead"
+  "better off dead",
+  "thinking about suicide",
+  "considering suicide"
 ];
 
 const CRISIS_RESPONSE = {

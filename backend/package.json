@@ -4,6 +4,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "seed:resources": "node src/scripts/seedResources.js",
+    "create-admin": "node src/scripts/createAdmin.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -19,6 +21,7 @@
     "express": "^4.22.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.2.3",
+    "multer": "^2.1.0",
     "openai": "^6.25.0"
   },
   "devDependencies": {

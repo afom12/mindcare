@@ -1,19 +1,21 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "/api/v1";
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
-const api = axios.create({
+export const API = axios.create({
   baseURL: API_URL,
   headers: { "Content-Type": "application/json" }
 });
 
-api.interceptors.request.use((config) => {
+API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
-api.interceptors.response.use(
+API.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
@@ -24,14 +26,3 @@ api.interceptors.response.use(
     return Promise.reject(err);
   }
 );
-
-export const authAPI = {
-  register: (data) => api.post("/auth/register", data),
-  login: (data) => api.post("/auth/login", data)
-};
-
-export const chatAPI = {
-  sendMessage: (message) => api.post("/ai/chat", { message })
-};
-
-export default api;

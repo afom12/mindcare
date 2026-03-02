@@ -19,7 +19,21 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "therapist", "admin"],
       default: "user"
-    }
+    },
+    status: {
+      type: String,
+      enum: ["active", "suspended", "banned"],
+      default: "active"
+    },
+    therapistVerification: {
+      type: String,
+      enum: ["pending", "verified", "rejected"],
+      default: null
+    },
+    license: { type: String, default: "" },
+    licenseType: { type: String, default: "" },
+    licenseDocumentUrl: { type: String, default: "" },
+    rejectionReason: { type: String, default: "" }
   },
   { timestamps: true }
 );
