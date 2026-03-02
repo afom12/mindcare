@@ -11,7 +11,9 @@ const recordCrisisEvent = async (opts) => {
       sessionId: opts.sessionId ?? null,
       chatId: opts.chatId ?? null,
       messagePreview: (opts.message || "").slice(0, 100),
-      source: opts.source
+      source: opts.source,
+      riskLevel: opts.riskLevel ?? "critical",
+      category: opts.category ?? "suicidal"
     });
   } catch (err) {
     console.error("CRISIS EVENT RECORD ERROR:", err);
@@ -63,19 +65,29 @@ export const sendAnonymousMessage = async (req, res) => {
     const crisis = detectCrisis(message);
     if (crisis) {
       let chat = await findOrCreateChat(null, sessionId);
+      const crisisContent = crisis.reason
+        ? `**Why I'm responding:** ${crisis.reason}\n\n${crisis.message}`
+        : crisis.message;
       chat.messages.push({ role: "user", content: message });
       chat.messages.push({
         role: "assistant",
-        content: crisis.message,
+        content: crisisContent,
         isCrisis: true,
         resources: crisis.resources
       });
       await chat.save();
 
-      await recordCrisisEvent({ sessionId, chatId: chat._id, message, source: "anonymous" });
+      await recordCrisisEvent({
+        sessionId,
+        chatId: chat._id,
+        message,
+        source: "anonymous",
+        riskLevel: crisis.riskLevel,
+        category: crisis.category
+      });
 
       return res.json({
-        reply: crisis.message,
+        reply: crisisContent,
         isCrisis: true,
         resources: crisis.resources,
         chat,
@@ -138,21 +150,30 @@ export const sendMessage = async (req, res) => {
     const crisis = detectCrisis(message);
     if (crisis) {
       let chat = await findOrCreateChatForUser(userId);
-
+      const crisisContent = crisis.reason
+        ? `**Why I'm responding:** ${crisis.reason}\n\n${crisis.message}`
+        : crisis.message;
       chat.messages.push({ role: "user", content: message });
       chat.messages.push({
         role: "assistant",
-        content: crisis.message,
+        content: crisisContent,
         isCrisis: true,
         resources: crisis.resources
       });
 
       await chat.save();
 
-      await recordCrisisEvent({ userId, chatId: chat._id, message, source: "logged_in" });
+      await recordCrisisEvent({
+        userId,
+        chatId: chat._id,
+        message,
+        source: "logged_in",
+        riskLevel: crisis.riskLevel,
+        category: crisis.category
+      });
 
       return res.json({
-        reply: crisis.message,
+        reply: crisisContent,
         isCrisis: true,
         resources: crisis.resources,
         chat

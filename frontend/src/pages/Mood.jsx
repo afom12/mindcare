@@ -1,7 +1,8 @@
 import { useState } from "react";
 import AppLayout from "../components/layout/AppLayout";
 import { useMood } from "../context/MoodContext";
-import { Heart } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Heart, BarChart3 } from "lucide-react";
 import { formatTime } from "../utils/helpers";
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -52,9 +53,18 @@ export default function Mood() {
     <AppLayout>
       <div className="flex-1 overflow-y-auto bg-slate-50 p-8">
         <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-2xl font-medium text-slate-800">Mood Tracker</h1>
-            <p className="text-slate-500 mt-1">Log how you&apos;re feeling and see your trends</p>
+          <div className="mb-8 flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-medium text-slate-800">Mood Tracker</h1>
+              <p className="text-slate-500 mt-1">Log how you&apos;re feeling and see your trends</p>
+            </div>
+            <Link
+              to="/assessments"
+              className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              <BarChart3 className="w-4 h-4" />
+              PHQ-9 / GAD-7
+            </Link>
           </div>
 
           {/* Log Mood Card */}

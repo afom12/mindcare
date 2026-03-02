@@ -811,9 +811,24 @@ function CrisisAlertsTab({ setError }) {
             <div key={a._id} className="bg-white rounded-2xl p-5 border border-rose-100 shadow-sm">
               <div className="flex justify-between items-start gap-4">
                 <div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${a.source === "anonymous" ? "bg-slate-100 text-slate-600" : "bg-blue-100 text-blue-800"}`}>
-                    {a.source === "anonymous" ? "Anonymous" : "Logged-in"}
-                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${a.source === "anonymous" ? "bg-slate-100 text-slate-600" : "bg-blue-100 text-blue-800"}`}>
+                      {a.source === "anonymous" ? "Anonymous" : "Logged-in"}
+                    </span>
+                    {a.riskLevel && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                        a.riskLevel === "critical" ? "bg-rose-100 text-rose-800" :
+                        a.riskLevel === "high" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {a.riskLevel}
+                      </span>
+                    )}
+                    {a.category && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-800">
+                        {a.category.replace("_", " ")}
+                      </span>
+                    )}
+                  </div>
                   {a.userId && <p className="text-sm text-slate-600 mt-2">User: {a.userId?.email}</p>}
                   {a.messagePreview && <p className="text-sm text-slate-700 mt-2 italic">&quot;{a.messagePreview}...&quot;</p>}
                   <p className="text-xs text-slate-400 mt-2">{new Date(a.createdAt).toLocaleString()}</p>

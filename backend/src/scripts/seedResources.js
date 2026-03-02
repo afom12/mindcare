@@ -14,9 +14,13 @@ const RESOURCES = [
   { type: "coping", category: "Breathing", title: "Box Breathing", steps: ["Breathe in for 4 counts", "Hold for 4 counts", "Breathe out for 4 counts", "Hold for 4 counts", "Repeat 4 times"] },
   { type: "coping", category: "Relaxation", title: "Progressive Muscle Relaxation", steps: ["Tense your feet for 5 seconds, then release", "Move up: calves, thighs, hands, arms, shoulders"] },
   { type: "coping", category: "Connection", title: "Reach Out", steps: ["Text or call someone you trust", "Share how you're feeling"] },
-  { type: "breathing", category: "Focus", title: "Box Breathing", duration: "2–4 min", description: "Calms the nervous system.", steps: ["Inhale for 4 seconds", "Hold for 4 seconds", "Exhale for 4 seconds", "Hold for 4 seconds"] },
-  { type: "breathing", category: "Relaxation", title: "4-7-8 Breathing", duration: "1–2 min", description: "Promotes relaxation and can help with sleep.", steps: ["Inhale through nose for 4 seconds", "Hold for 7 seconds", "Exhale slowly through mouth for 8 seconds"] },
-  { type: "breathing", category: "Calm", title: "Belly Breathing", duration: "3–5 min", description: "Activates the parasympathetic nervous system.", steps: ["Place one hand on your chest, one on your belly", "Breathe in slowly—let your belly rise"] }
+  { type: "breathing", category: "Focus", title: "Box Breathing", duration: "2–4 min", description: "Calms the nervous system. Used by Navy SEALs for focus under pressure.", steps: ["Inhale for 4 seconds", "Hold for 4 seconds", "Exhale for 4 seconds", "Hold for 4 seconds", "Repeat 4–6 times"] },
+  { type: "breathing", category: "Relaxation", title: "4-7-8 Breathing", duration: "1–2 min", description: "Promotes relaxation and can help with sleep. Dr. Weil's technique.", steps: ["Inhale through nose for 4 seconds", "Hold for 7 seconds", "Exhale slowly through mouth for 8 seconds", "Repeat 4 times"] },
+  { type: "breathing", category: "Calm", title: "Belly Breathing", duration: "3–5 min", description: "Activates the parasympathetic nervous system.", steps: ["Place one hand on your chest, one on your belly", "Breathe in slowly—let your belly rise", "Exhale slowly—belly falls", "Keep chest still"] },
+  { type: "breathing", category: "Energy", title: "Energizing Breath", duration: "1–2 min", description: "Quick pick-me-up when you feel sluggish.", steps: ["Sit upright", "Quick inhales and exhales through nose (like a dog panting)", "Do for 15–30 seconds", "Then breathe normally"] },
+  { type: "breathing", category: "Sleep", title: "Extended Exhale", duration: "3–5 min", description: "Slows heart rate and prepares body for sleep.", steps: ["Inhale for 4 counts", "Exhale for 6–8 counts", "Make exhale longer than inhale", "Repeat 5–10 times"] },
+  { type: "coping", category: "Sleep", title: "Sleep Wind-Down", steps: ["Dim lights 1 hour before bed", "Avoid screens 30 min before", "Do 4-7-8 breathing (see Resources)", "Imagine a peaceful place in detail"] },
+  { type: "coping", category: "Guided", title: "Body Scan Relaxation", steps: ["Lie down or sit comfortably", "Start at your feet—notice any tension", "Slowly move attention up: calves, thighs, belly", "Continue to chest, arms, shoulders, face", "Release tension in each area as you go"] }
 ];
 
 async function seed() {

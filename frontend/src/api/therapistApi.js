@@ -8,5 +8,6 @@ export const therapistApi = {
   addBlockedSlot: (data) => API.post("/v1/therapist/blocked-slots", data),
   deleteBlockedSlot: (id) => API.delete(`/v1/therapist/blocked-slots/${id}`),
   getClients: (params) => API.get("/v1/therapist/clients", { params }),
-  getClientDetail: (clientId) => API.get(`/v1/therapist/clients/${clientId}`)
+  getClientDetail: (clientId) => API.get(`/v1/therapist/clients/${clientId}`),
+  updateProfile: (data) => API.patch("/v1/therapist/profile", data)
 };

@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import LegalFooter from "../components/LegalFooter";
 
 const slides = [
   {
@@ -196,6 +197,7 @@ export default function Onboarding() {
             >
               a gentle companion, not a therapist
             </motion.p>
+            <LegalFooter />
           </div>
         </div>
       </div>

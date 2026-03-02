@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import LegalFooter from "../components/LegalFooter";
 import { registerUser, registerTherapist } from "../api/authApi";
 import { ANON_SESSION_KEY } from "../api/chatApi";
 
@@ -44,7 +45,8 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="flex-1 flex flex-col lg:flex-row">
       {/* Left side */}
       <div className="lg:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
         <p className="text-sm font-medium text-slate-400 tracking-wider mb-12">MINDCARE</p>
@@ -192,6 +194,8 @@ export default function Register() {
           </p>
         </div>
       </div>
+      </div>
+      <LegalFooter />
     </div>
   );
 }

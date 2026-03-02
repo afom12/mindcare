@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import { bookingApi } from "../api/bookingApi";
 import { Link } from "react-router-dom";
-import { UserCheck, Loader2, Calendar, MessageSquare } from "lucide-react";
+import { UserCheck, Loader2, Calendar, MessageSquare, ChevronRight } from "lucide-react";
 
 export default function Therapists() {
+  const [searchParams] = useSearchParams();
   const [therapists, setTherapists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,6 +22,14 @@ export default function Therapists() {
       .catch((err) => setError(err.response?.data?.message || "Failed to load therapists"))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const bookId = searchParams.get("book");
+    if (bookId && therapists.length > 0) {
+      const t = therapists.find((x) => x._id === bookId);
+      if (t) setBookingModal({ therapist: t });
+    }
+  }, [searchParams, therapists]);
 
   const handleBook = (therapist) => {
     setBookingModal({ therapist });
@@ -107,30 +117,61 @@ export default function Therapists() {
               {therapists.map((t) => (
                 <div
                   key={t._id}
-                  className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex justify-between items-center"
+                  className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:border-slate-200 transition-colors"
                 >
-                  <div>
-                    <p className="font-medium text-slate-800">{t.name}</p>
-                    <p className="text-sm text-slate-500">{t.email}</p>
-                    {t.license && (
-                      <p className="text-xs text-slate-400 mt-1">License: {t.license}</p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <Link
-                      to={`/messages?therapist=${t._id}`}
-                      className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl text-sm hover:bg-slate-50"
+                      to={`/therapists/${t._id}`}
+                      className="flex-1 min-w-0 flex items-start gap-4 group"
                     >
-                      <MessageSquare className="w-4 h-4" />
-                      Message
+                      <div className="w-14 h-14 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <span className="text-lg font-medium text-slate-600">
+                          {t.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-slate-800 group-hover:text-slate-600">
+                          {t.name}
+                        </p>
+                        {t.licenseType && (
+                          <p className="text-sm text-slate-500">{t.licenseType}</p>
+                        )}
+                        {t.specialties?.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-1">
+                            {t.specialties.slice(0, 3).map((s, i) => (
+                              <span
+                                key={i}
+                                className="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded"
+                              >
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        {t.bio && (
+                          <p className="text-sm text-slate-500 mt-1 line-clamp-2">{t.bio}</p>
+                        )}
+                        <span className="inline-flex items-center gap-1 text-sm text-slate-400 mt-1 group-hover:text-slate-600">
+                          View profile <ChevronRight className="w-4 h-4" />
+                        </span>
+                      </div>
                     </Link>
-                    <button
-                      onClick={() => handleBook(t)}
-                      className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl text-sm hover:bg-slate-700"
-                    >
-                      <Calendar className="w-4 h-4" />
-                      Book session
-                    </button>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Link
+                        to={`/messages?therapist=${t._id}`}
+                        className="flex items-center gap-2 px-4 py-2 border border-slate-200 text-slate-700 rounded-xl text-sm hover:bg-slate-50"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        Message
+                      </Link>
+                      <button
+                        onClick={() => handleBook(t)}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-xl text-sm hover:bg-slate-700"
+                      >
+                        <Calendar className="w-4 h-4" />
+                        Book session
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

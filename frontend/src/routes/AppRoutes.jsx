@@ -11,9 +11,11 @@ import Dashboard from "../pages/Dashboard";
 import Profile from "../pages/Profile";
 import ProfileEdit from "../pages/ProfileEdit";
 import Mood from "../pages/Mood";
+import Assessments from "../pages/Assessments";
 import Resources from "../pages/Resources";
 import Community from "../pages/Community";
 import Therapists from "../pages/Therapists";
+import TherapistProfile from "../pages/TherapistProfile";
 import Bookings from "../pages/Bookings";
 import Messages from "../pages/Messages";
 import VideoCall from "../pages/VideoCall";
@@ -23,6 +25,10 @@ import TherapistRoute from "../components/TherapistRoute";
 import TherapistSchedule from "../pages/TherapistSchedule";
 import ClientList from "../pages/ClientList";
 import ClientDetail from "../pages/ClientDetail";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
+import TermsOfService from "../pages/TermsOfService";
+import Contact from "../pages/Contact";
+import FAQ from "../pages/FAQ";
 
 function LandingPage() {
   const { user } = useAuth();
@@ -39,6 +45,11 @@ export default function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/faq" element={<FAQ />} />
 
       <Route path="/chat" element={<Chat />} />
       <Route
@@ -74,6 +85,14 @@ export default function AppRoutes() {
         }
       />
       <Route
+        path="/assessments"
+        element={
+          <ProtectedRoute>
+            <Assessments />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/resources"
         element={
           <ProtectedRoute>
@@ -94,6 +113,14 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute>
             <Therapists />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/therapists/:id"
+        element={
+          <ProtectedRoute>
+            <TherapistProfile />
           </ProtectedRoute>
         }
       />

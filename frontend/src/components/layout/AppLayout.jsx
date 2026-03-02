@@ -14,7 +14,8 @@ import {
   Calendar,
   CalendarClock,
   UserCheck,
-  Mail
+  Mail,
+  BarChart3
 } from "lucide-react";
 import NotificationBell from "../NotificationBell";
 
@@ -29,6 +30,7 @@ export default function AppLayout({ children }) {
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     ...(user?.role !== "therapist" ? [{ name: "Chat", href: "/chat", icon: MessageCircle }] : []),
     ...(user?.role !== "therapist" ? [{ name: "Mood Tracker", href: "/mood", icon: Heart }] : []),
+    ...(user?.role !== "therapist" ? [{ name: "Assessments", href: "/assessments", icon: BarChart3 }] : []),
     { name: "Resources", href: "/resources", icon: BookOpen },
     { name: "Community", href: "/community", icon: Users },
     ...(user?.role === "user" ? [{ name: "Book Session", href: "/therapists", icon: UserCheck }] : []),

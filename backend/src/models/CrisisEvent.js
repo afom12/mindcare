@@ -8,7 +8,9 @@ const crisisEventSchema = new mongoose.Schema(
     chatId: { type: mongoose.Schema.Types.ObjectId, ref: "Chat", default: null },
     // Truncated message preview for context (no full content for privacy)
     messagePreview: { type: String, maxlength: 100 },
-    source: { type: String, enum: ["anonymous", "logged_in"], required: true }
+    source: { type: String, enum: ["anonymous", "logged_in"], required: true },
+    riskLevel: { type: String, enum: ["critical", "high", "moderate"], default: "critical" },
+    category: { type: String, enum: ["suicidal", "self_harm", "psychosis"], default: "suicidal" }
   },
   { timestamps: true }
 );

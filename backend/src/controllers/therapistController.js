@@ -4,6 +4,35 @@ import User from "../models/User.js";
 import Availability from "../models/Availability.js";
 import BlockedSlot from "../models/BlockedSlot.js";
 
+export const updateTherapistProfile = async (req, res) => {
+  try {
+    const therapistId = req.user._id;
+    const { bio, specialties, approach } = req.body;
+
+    const updates = {};
+    if (bio !== undefined) updates.bio = String(bio).trim().slice(0, 2000);
+    if (approach !== undefined) updates.approach = String(approach).trim().slice(0, 500);
+    if (Array.isArray(specialties)) {
+      updates.specialties = specialties.filter((s) => typeof s === "string" && s.trim()).map((s) => s.trim()).slice(0, 10);
+    }
+
+    const user = await User.findByIdAndUpdate(
+      therapistId,
+      { $set: updates },
+      { new: true }
+    )
+      .select("name email license licenseType bio specialties approach profilePhotoUrl")
+      .lean();
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.json({ therapist: user });
+  } catch (error) {
+    console.error("UPDATE THERAPIST PROFILE ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 function startOfDay(d) {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);

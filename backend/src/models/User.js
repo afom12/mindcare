@@ -34,6 +34,11 @@ const userSchema = new mongoose.Schema(
     licenseType: { type: String, default: "" },
     licenseDocumentUrl: { type: String, default: "" },
     rejectionReason: { type: String, default: "" },
+    // Therapist profile (public)
+    bio: { type: String, default: "" },
+    specialties: [{ type: String }],
+    approach: { type: String, default: "" },
+    profilePhotoUrl: { type: String, default: "" },
     resetPasswordToken: { type: String, default: null },
     resetPasswordExpires: { type: Date, default: null }
   },

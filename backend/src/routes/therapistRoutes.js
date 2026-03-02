@@ -7,7 +7,8 @@ import {
   addBlockedSlot,
   deleteBlockedSlot,
   getClients,
-  getClientDetail
+  getClientDetail,
+  updateTherapistProfile
 } from "../controllers/therapistController.js";
 import { protectRoute } from "../middleware/authMiddleware.js";
 
@@ -30,5 +31,6 @@ router.post("/blocked-slots", therapistOnly, addBlockedSlot);
 router.delete("/blocked-slots/:id", therapistOnly, deleteBlockedSlot);
 router.get("/clients", therapistOnly, getClients);
 router.get("/clients/:clientId", therapistOnly, getClientDetail);
+router.patch("/profile", therapistOnly, updateTherapistProfile);
 
 export default router;

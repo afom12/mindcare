@@ -1,19 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AppLayout from "../components/layout/AppLayout";
 import { updateProfile } from "../api/authApi";
+import { therapistApi } from "../api/therapistApi";
 
 export default function ProfileEdit() {
   const navigate = useNavigate();
   const { user, updateUser } = useAuth();
+  const isTherapist = user?.role === "therapist";
   const [form, setForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    currentPassword: ""
+    currentPassword: "",
+    bio: "",
+    specialties: "",
+    approach: ""
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setForm((f) => ({
+        ...f,
+        name: user.name || "",
+        email: user.email || "",
+        bio: user.bio || "",
+        specialties: Array.isArray(user.specialties) ? user.specialties.join(", ") : "",
+        approach: user.approach || ""
+      }));
+    }
+  }, [user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,7 +44,24 @@ export default function ProfileEdit() {
         payload.currentPassword = form.currentPassword;
       }
       const { data } = await updateProfile(payload);
-      updateUser(data.user);
+      let mergedUser = data.user;
+
+      if (isTherapist) {
+        const therapistPayload = {
+          bio: form.bio.trim() || undefined,
+          specialties: form.specialties
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+          approach: form.approach.trim() || undefined
+        };
+        const { data: therapistData } = await therapistApi.updateProfile(therapistPayload);
+        if (therapistData?.therapist) {
+          mergedUser = { ...mergedUser, ...therapistData.therapist };
+        }
+      }
+
+      updateUser(mergedUser);
       navigate("/profile", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update profile.");
@@ -88,6 +123,51 @@ export default function ProfileEdit() {
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400"
                 />
               </div>
+            )}
+
+            {isTherapist && (
+              <>
+                <div className="pt-4 border-t border-slate-200">
+                  <h2 className="text-sm font-medium text-slate-600 mb-3">Professional profile</h2>
+                  <p className="text-xs text-slate-500 mb-3">
+                    This information is shown on your public therapist profile.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Bio</label>
+                  <textarea
+                    value={form.bio}
+                    onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                    rows={4}
+                    placeholder="A brief introduction about you and your practice..."
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Specialties (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={form.specialties}
+                    onChange={(e) => setForm({ ...form, specialties: e.target.value })}
+                    placeholder="e.g. Anxiety, Depression, CBT"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Therapeutic approach
+                  </label>
+                  <textarea
+                    value={form.approach}
+                    onChange={(e) => setForm({ ...form, approach: e.target.value })}
+                    rows={3}
+                    placeholder="Describe your therapeutic approach and what clients can expect..."
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-400 resize-none"
+                  />
+                </div>
+              </>
             )}
 
             <div className="flex gap-3 pt-4">

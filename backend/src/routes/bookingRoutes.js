@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getTherapists,
+  getTherapistProfile,
   createBooking,
   getMyBookings,
   updateBookingStatus,
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.get("/therapists", getTherapists);
 router.get("/therapists/:id/available-slots", getAvailableSlots);
+router.get("/therapists/:id", getTherapistProfile);
 
 router.use(protectRoute);
 

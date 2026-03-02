@@ -2,6 +2,7 @@ import { API } from "./api";
 
 export const bookingApi = {
   getTherapists: () => API.get("/v1/therapists"),
+  getTherapistProfile: (id) => API.get(`/v1/therapists/${id}`),
   getAvailableSlots: (therapistId, date) =>
     API.get(`/v1/therapists/${therapistId}/available-slots`, { params: { date } }),
   createBooking: (data) => API.post("/v1/bookings", data),

@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import moodRoutes from "./routes/moodRoutes.js";
+import assessmentRoutes from "./routes/assessmentRoutes.js";
 import communityRoutes from "./routes/communityRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import resourceRoutes from "./routes/resourceRoutes.js";
@@ -14,6 +15,7 @@ import bookingRoutes from "./routes/bookingRoutes.js";
 import messagingRoutes from "./routes/messagingRoutes.js";
 import videoRoutes from "./routes/videoRoutes.js";
 import therapistRoutes from "./routes/therapistRoutes.js";
+import contactRoutes from "./routes/contactRoutes.js";
 import { apiLimiter } from "./middleware/rateLimit.js";
 
 connectDB(); // this connects MongoDB
@@ -44,6 +46,7 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/ai", chatRoutes);
 app.use("/api/v1/mood", moodRoutes);
+app.use("/api/v1/assessments", assessmentRoutes);
 app.use("/api/v1", communityRoutes);
 app.use("/api/v1", notificationRoutes);
 app.use("/api/v1", resourceRoutes);
@@ -51,6 +54,7 @@ app.use("/api/v1", bookingRoutes);
 app.use("/api/v1", messagingRoutes);
 app.use("/api/v1", videoRoutes);
 app.use("/api/v1/therapist", therapistRoutes);
+app.use("/api/v1", contactRoutes);
 app.use("/api/v1", adminRoutes);
 
 app.get("/", (req, res) => {

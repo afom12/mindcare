@@ -9,12 +9,35 @@ export const getTherapists = async (req, res) => {
       therapistVerification: "verified",
       status: "active"
     })
-      .select("name email license")
+      .select("name email license licenseType bio specialties approach profilePhotoUrl")
       .sort({ name: 1 })
       .lean();
     res.json({ therapists });
   } catch (error) {
     console.error("GET THERAPISTS ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getTherapistProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const therapist = await User.findOne({
+      _id: id,
+      role: "therapist",
+      therapistVerification: "verified",
+      status: "active"
+    })
+      .select("name license licenseType bio specialties approach profilePhotoUrl")
+      .lean();
+
+    if (!therapist) {
+      return res.status(404).json({ message: "Therapist not found" });
+    }
+
+    res.json({ therapist });
+  } catch (error) {
+    console.error("GET THERAPIST PROFILE ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 };

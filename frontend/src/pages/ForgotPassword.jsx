@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import LegalFooter from "../components/LegalFooter";
 import { forgotPassword } from "../api/authApi";
 
 export default function ForgotPassword() {
@@ -23,7 +24,8 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="flex-1 flex flex-col lg:flex-row">
       <div className="lg:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
         <p className="text-sm font-medium text-slate-400 tracking-wider mb-12">MINDCARE</p>
         <div className="space-y-8">
@@ -105,6 +107,8 @@ export default function ForgotPassword() {
           </div>
         </div>
       </div>
+      </div>
+      <LegalFooter />
     </div>
   );
 }

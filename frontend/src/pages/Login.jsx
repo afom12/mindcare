@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import LegalFooter from "../components/LegalFooter";
 import { loginUser } from "../api/authApi";
 import { chatApi, ANON_SESSION_KEY } from "../api/chatApi";
 
@@ -39,8 +40,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Left side */}
+      <div className="flex-1 flex flex-col lg:flex-row">
       <div className="lg:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
         <p className="text-sm font-medium text-slate-400 tracking-wider mb-12">MINDCARE</p>
         <div className="space-y-8">
@@ -132,6 +134,8 @@ export default function Login() {
           </p>
         </div>
       </div>
+      </div>
+      <LegalFooter />
     </div>
   );
 }

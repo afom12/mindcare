@@ -39,3 +39,32 @@ export async function sendPasswordResetEmail(to, resetUrl) {
   });
   return { ok: true };
 }
+
+export async function sendContactEmail({ email, subject, message }) {
+  const transport = getTransporter();
+  const to = process.env.CONTACT_EMAIL || process.env.SMTP_USER;
+
+  if (!to) {
+    console.log("[DEV] Contact form submission (no CONTACT_EMAIL):", { email, subject, message });
+    return { ok: true };
+  }
+
+  if (transport) {
+    await transport.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to,
+      replyTo: email,
+      subject: `[MindCare AI Contact] ${subject}`,
+      html: `
+        <p><strong>From:</strong> ${email}</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <hr />
+        <p>${message.replace(/\n/g, "<br>")}</p>
+      `
+    });
+  } else {
+    console.log("[DEV] Contact form (no SMTP):", { email, subject, message });
+  }
+
+  return { ok: true };
+}
