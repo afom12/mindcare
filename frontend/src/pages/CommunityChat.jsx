@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { communityChatApi } from "../api/communityChatApi";
 import { resourceApi } from "../api/resourceApi";
 import { io } from "socket.io-client";
-import { Users, MessageCircle, Loader2, Send, LogIn, LogOut, UserPlus, BookOpen, ExternalLink, Ban, Flag, MoreVertical } from "lucide-react";
+import { Users, MessageCircle, Loader2, Send, LogIn, LogOut, UserPlus, BookOpen, ExternalLink, Ban, Flag, MoreVertical, ChevronLeft } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 const SOCKET_URL = API_URL.replace("/api", "").replace(/\/$/, "") || window.location.origin;
@@ -368,9 +368,24 @@ export default function CommunityChat() {
           </button>
         </div>
 
+        {error && (
+          <div className="px-4 py-2 bg-rose-50 border-b border-rose-100 flex items-center justify-between gap-4">
+            <p className="text-rose-700 text-sm flex-1 truncate">{error}</p>
+            <button
+              onClick={() => { setError(""); loadGroups(); loadPeerConversations(); }}
+              className="flex-shrink-0 px-3 py-1.5 text-sm font-medium text-rose-700 bg-rose-100 rounded-lg hover:bg-rose-200"
+            >
+              Retry
+            </button>
+          </div>
+        )}
         <div className="flex flex-1 min-h-0">
-          {/* Sidebar */}
-          <div className="w-72 border-r border-slate-200 bg-white overflow-y-auto flex-shrink-0">
+          {/* Sidebar - hidden on mobile when chat is selected */}
+          <div
+            className={`w-full md:w-72 border-r border-slate-200 bg-white overflow-y-auto flex-shrink-0 transition-all ${
+              (selectedGroup || selectedPeer) ? "hidden md:block" : "block"
+            }`}
+          >
             {mode === "groups" ? (
               loading ? (
                 <div className="p-6 flex justify-center">
@@ -428,12 +443,19 @@ export default function CommunityChat() {
           </div>
 
           {/* Chat area */}
-          <div className="flex-1 flex flex-col min-w-0 bg-slate-50">
+          <div className={`flex-1 flex flex-col min-w-0 bg-slate-50 ${(selectedGroup || selectedPeer) ? "flex" : "hidden md:flex"}`}>
             {mode === "groups" && selectedGroup ? (
               <>
                 <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{selectedGroup.icon}</span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <button
+                      onClick={() => { setSelectedGroup(null); setGroupMessages([]); }}
+                      className="md:hidden p-2 -ml-2 rounded-lg hover:bg-slate-100 text-slate-600 flex-shrink-0"
+                      aria-label="Back to groups"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <span className="text-xl flex-shrink-0">{selectedGroup.icon}</span>
                     <div>
                       <h2 className="font-medium text-slate-800">{selectedGroup.name}</h2>
                       <p className="text-xs text-slate-500">{selectedGroup.memberCount} members</p>
@@ -537,11 +559,20 @@ export default function CommunityChat() {
             ) : mode === "peer" && selectedPeer ? (
               <>
                 <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-                  <div>
-                    <h2 className="font-medium text-slate-800">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <button
+                      onClick={() => { setSelectedPeer(null); setPeerMessages([]); }}
+                      className="md:hidden p-2 -ml-2 rounded-lg hover:bg-slate-100 text-slate-600 flex-shrink-0"
+                      aria-label="Back to conversations"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <div className="min-w-0">
+                    <h2 className="font-medium text-slate-800 truncate">
                       {selectedPeer.otherUser?.name || "Anonymous"}
                     </h2>
-                    <p className="text-xs text-slate-500">Direct message • Moderated</p>
+                  <p className="text-xs text-slate-500">Direct message • Moderated</p>
+                    </div>
                   </div>
                   <div className="relative">
                     <button
@@ -695,18 +726,24 @@ export default function CommunityChat() {
             )}
           </div>
 
-          {/* Members panel */}
+          {/* Members panel - slide-over on mobile */}
           {showMembers && (
-            <div className="w-64 border-l border-slate-200 bg-white overflow-y-auto">
-              <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-                <h3 className="font-medium text-slate-800">Members</h3>
-                <button
-                  onClick={() => setShowMembers(false)}
-                  className="text-slate-500 hover:text-slate-700"
-                >
-                  ×
-                </button>
-              </div>
+            <>
+              <div
+                className="fixed inset-0 bg-black/30 z-40 md:hidden"
+                onClick={() => setShowMembers(false)}
+                aria-hidden="true"
+              />
+              <div className="fixed inset-y-0 right-0 w-64 max-w-[85vw] bg-white border-l border-slate-200 overflow-y-auto z-50 md:relative md:inset-auto md:max-w-none">
+                <div className="p-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
+                  <h3 className="font-medium text-slate-800">Members</h3>
+                  <button
+                    onClick={() => setShowMembers(false)}
+                    className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    ×
+                  </button>
+                </div>
               <div className="p-2">
                 {members.map((m) => (
                   <button
@@ -724,7 +761,8 @@ export default function CommunityChat() {
                   </button>
                 ))}
               </div>
-            </div>
+              </div>
+            </>
           )}
 
           {/* Report user modal */}

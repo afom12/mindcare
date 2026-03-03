@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.js",
+    "seed": "node src/scripts/seedAll.js",
     "seed:resources": "node src/scripts/seedResources.js",
     "seed:videos": "node src/scripts/seedVideosAndLinks.js",
     "create-admin": "node src/scripts/createAdmin.js",

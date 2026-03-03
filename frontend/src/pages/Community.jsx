@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { communityApi, REACTION_EMOJIS } from "../api/communityApi";
 import { useAuth } from "../context/AuthContext";
+import { SkeletonPost } from "../components/Skeleton";
 
 const REACTION_KEYS = ["heart", "pray", "sprout", "hug"];
 
@@ -283,7 +284,7 @@ export default function Community() {
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-2 mb-6 border-b border-slate-200">
+          <div className="flex items-center gap-2 mb-6 border-b border-slate-200 overflow-x-auto pb-px -mb-px">
             {[
               { id: "discover", label: "Discover", icon: Users },
               { id: "my-groups", label: "My Groups", icon: Heart },
@@ -355,6 +356,17 @@ export default function Community() {
 
               {/* Trending / Feed */}
               <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                {error && (
+                  <div className="mb-4 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-between gap-4">
+                    <p className="text-rose-700 text-sm flex-1">{error}</p>
+                    <button
+                      onClick={() => { setError(""); loadPosts(); }}
+                      className="px-3 py-1.5 text-sm font-medium text-rose-700 bg-rose-100 rounded-lg hover:bg-rose-200"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                )}
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-medium text-slate-800">
                     {activeTab === "trending" ? "Trending discussions" : "Recent discussions"}
@@ -362,8 +374,10 @@ export default function Community() {
                 </div>
 
                 {loading ? (
-                  <div className="flex justify-center py-12">
-                    <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />
+                  <div className="space-y-4">
+                    {[1, 2, 3].map((i) => (
+                      <SkeletonPost key={i} />
+                    ))}
                   </div>
                 ) : filteredPosts.length === 0 ? (
                   <div className="py-12 text-center text-slate-500">

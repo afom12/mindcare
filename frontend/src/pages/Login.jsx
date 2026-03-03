@@ -46,8 +46,8 @@ export default function Login() {
       <div className="lg:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
         <p className="text-sm font-medium text-slate-400 tracking-wider mb-12">MINDCARE</p>
         <div className="space-y-8">
-          <div className="text-8xl mb-6">🫧</div>
-          <h1 className="text-5xl lg:text-6xl font-light text-slate-800 tracking-tight">
+          <div className="text-6xl sm:text-8xl mb-6">🫧</div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-light text-slate-800 tracking-tight">
             welcome back.
           </h1>
           <p className="text-lg text-slate-500 max-w-sm leading-relaxed">
