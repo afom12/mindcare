@@ -17,7 +17,9 @@ export const getResources = async (req, res) => {
         { title: searchRegex },
         { excerpt: searchRegex },
         { content: searchRegex },
-        { description: searchRegex }
+        { description: searchRegex },
+        { category: searchRegex },
+        { source: searchRegex }
       ];
     }
 

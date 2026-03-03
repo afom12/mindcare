@@ -1,4 +1,5 @@
 import Mood from "../models/Mood.js";
+import Notification from "../models/Notification.js";
 
 const MOOD_LABELS = {
   1: "Struggling",
@@ -22,6 +23,24 @@ export const logMood = async (req, res) => {
       value: Number(value),
       note: note || ""
     });
+
+    if (Number(value) <= 2) {
+      const quotes = [
+        "You don't have to be great to start, but you have to start to be great.",
+        "This feeling will pass. You've survived 100% of your bad days.",
+        "Be gentle with yourself. You're doing the best you can.",
+        "Small steps still move you forward.",
+        "It's okay to not be okay. Asking for help is strength."
+      ];
+      const quote = quotes[Math.floor(Math.random() * quotes.length)];
+      await Notification.create({
+        userId,
+        type: "general",
+        title: "A gentle reminder",
+        body: `${quote} — Check out breathing exercises and coping strategies in Resources.`,
+        link: "/resources"
+      });
+    }
 
     return res.status(201).json({
       message: "Mood logged",

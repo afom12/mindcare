@@ -14,6 +14,9 @@ import Mood from "../pages/Mood";
 import Assessments from "../pages/Assessments";
 import Resources from "../pages/Resources";
 import Community from "../pages/Community";
+import CommunityChat from "../pages/CommunityChat";
+import CommunityModeration from "../pages/CommunityModeration";
+import CommunityChatModeration from "../pages/CommunityChatModeration";
 import Therapists from "../pages/Therapists";
 import TherapistProfile from "../pages/TherapistProfile";
 import Bookings from "../pages/Bookings";
@@ -22,6 +25,7 @@ import VideoCall from "../pages/VideoCall";
 import Admin from "../pages/Admin";
 import AdminRoute from "../components/AdminRoute";
 import TherapistRoute from "../components/TherapistRoute";
+import TherapistOrAdminRoute from "../components/TherapistOrAdminRoute";
 import TherapistSchedule from "../pages/TherapistSchedule";
 import ClientList from "../pages/ClientList";
 import ClientDetail from "../pages/ClientDetail";
@@ -109,6 +113,14 @@ export default function AppRoutes() {
         }
       />
       <Route
+        path="/community/chat"
+        element={
+          <ProtectedRoute>
+            <CommunityChat />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/therapists"
         element={
           <ProtectedRoute>
@@ -170,6 +182,22 @@ export default function AppRoutes() {
           <TherapistRoute>
             <ClientDetail />
           </TherapistRoute>
+        }
+      />
+      <Route
+        path="/therapist/community"
+        element={
+          <TherapistOrAdminRoute>
+            <CommunityModeration />
+          </TherapistOrAdminRoute>
+        }
+      />
+      <Route
+        path="/therapist/chat-moderation"
+        element={
+          <TherapistOrAdminRoute>
+            <CommunityChatModeration />
+          </TherapistOrAdminRoute>
         }
       />
       <Route

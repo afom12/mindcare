@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import {
   Users,
@@ -17,7 +18,10 @@ import {
   Activity,
   FileText,
   AlertTriangle,
-  ExternalLink
+  ExternalLink,
+  UserX,
+  Check,
+  X
 } from "lucide-react";
 import { adminApi } from "../api/adminApi";
 
@@ -25,7 +29,8 @@ const TABS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "users", label: "Users", icon: Users },
   { id: "posts", label: "Community Posts", icon: MessageSquare },
-  { id: "reports", label: "Reports", icon: Flag },
+  { id: "reports", label: "Post Reports", icon: Flag },
+  { id: "userReports", label: "User Reports", icon: UserX },
   { id: "crisis", label: "Crisis Alerts", icon: AlertTriangle },
   { id: "therapists", label: "Therapists", icon: UserCheck },
   { id: "resources", label: "Resources", icon: BookOpen },
@@ -85,6 +90,7 @@ export default function Admin() {
           {tab === "users" && <UsersTab setError={setError} />}
           {tab === "posts" && <PostsTab setError={setError} />}
           {tab === "reports" && <ReportsTab setError={setError} />}
+          {tab === "userReports" && <UserReportsTab setError={setError} />}
           {tab === "crisis" && <CrisisAlertsTab setError={setError} />}
           {tab === "therapists" && <TherapistsTab setError={setError} />}
           {tab === "resources" && <ResourcesTab setError={setError} />}
@@ -98,10 +104,12 @@ export default function Admin() {
 
 function OverviewTab({ stats, loading, setTab }) {
   const [reports, setReports] = useState([]);
+  const [userReports, setUserReports] = useState([]);
   const [therapists, setTherapists] = useState([]);
 
   useEffect(() => {
     if (stats?.pendingReports > 0) adminApi.getReports({ status: "pending" }).then(({ data }) => setReports(data.reports?.slice(0, 5) || [])).catch(() => {});
+    if (stats?.pendingUserReports > 0) adminApi.getUserReports({ status: "pending" }).then(({ data }) => setUserReports(data.reports?.slice(0, 5) || [])).catch(() => {});
     if (stats?.pendingTherapists > 0) adminApi.getPendingTherapists().then(({ data }) => setTherapists(data.therapists?.slice(0, 5) || [])).catch(() => {});
   }, [stats]);
 
@@ -116,14 +124,17 @@ function OverviewTab({ stats, loading, setTab }) {
   const cards = [
     { label: "Total Users", value: stats?.totalUsers ?? 0, icon: Users },
     { label: "Active Therapists", value: stats?.activeTherapists ?? 0, icon: UserCheck },
-    { label: "Pending Reports", value: stats?.pendingReports ?? 0, icon: Flag, alert: (stats?.pendingReports ?? 0) > 0 },
+    { label: "Pending Post Reports", value: stats?.pendingReports ?? 0, icon: Flag, alert: (stats?.pendingReports ?? 0) > 0 },
+    { label: "Pending User Reports", value: stats?.pendingUserReports ?? 0, icon: UserX, alert: (stats?.pendingUserReports ?? 0) > 0 },
     { label: "Crisis Alerts Today", value: stats?.crisisAlertsToday ?? 0, icon: AlertTriangle, alert: (stats?.crisisAlertsToday ?? 0) > 0 },
     { label: "Pending Verification", value: stats?.pendingTherapists ?? 0, icon: Shield },
     { label: "Community Posts", value: stats?.totalPosts ?? 0, icon: MessageSquare },
     { label: "Pending Posts", value: stats?.pendingPosts ?? 0, icon: MessageSquare, alert: (stats?.pendingPosts ?? 0) > 0 },
     { label: "Resources", value: stats?.totalResources ?? 0, icon: BookOpen },
     { label: "Mood Logs", value: stats?.totalMoods ?? 0, icon: BarChart3 },
-    { label: "Chat Sessions", value: stats?.totalChats ?? 0, icon: MessageSquare }
+    { label: "AI Chat Sessions", value: stats?.totalChats ?? 0, icon: MessageSquare },
+    { label: "Group Chat Messages", value: stats?.communityGroupMessages ?? 0, icon: MessageSquare },
+    { label: "Peer DM Messages", value: stats?.peerMessages ?? 0, icon: MessageSquare }
   ];
 
   return (
@@ -153,7 +164,10 @@ function OverviewTab({ stats, loading, setTab }) {
               <UserCheck className="w-4 h-4" /> Verify Therapists
             </button>
             <button onClick={() => setTab("reports")} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm">
-              <Flag className="w-4 h-4" /> Moderate Reports
+              <Flag className="w-4 h-4" /> Post Reports
+            </button>
+            <button onClick={() => setTab("userReports")} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm">
+              <UserX className="w-4 h-4" /> User Reports
             </button>
             <button onClick={() => setTab("posts")} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm">
               <MessageSquare className="w-4 h-4" /> Approve Posts
@@ -161,6 +175,9 @@ function OverviewTab({ stats, loading, setTab }) {
             <button onClick={() => setTab("crisis")} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm">
               <AlertTriangle className="w-4 h-4" /> Crisis Alerts
             </button>
+            <Link to="/therapist/chat-moderation" className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm">
+              <MessageSquare className="w-4 h-4" /> Moderate Chat
+            </Link>
             <button onClick={() => setTab("resources")} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm">
               <FileText className="w-4 h-4" /> Create Resource
             </button>
@@ -170,13 +187,13 @@ function OverviewTab({ stats, loading, setTab }) {
           </div>
         </div>
 
-        {/* Recent Reports */}
+        {/* Recent Post Reports */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-slate-800">Recent Reports</h3>
+            <h3 className="font-medium text-slate-800">Recent Post Reports</h3>
             {reports.length > 0 && <button onClick={() => setTab("reports")} className="text-sm text-slate-600 hover:text-slate-800">View all</button>}
           </div>
-          {reports.length === 0 ? <p className="text-xs text-slate-500">No pending reports</p> : (
+          {reports.length === 0 ? <p className="text-xs text-slate-500">No pending post reports</p> : (
             <div className="space-y-2">
               {reports.map((r) => (
                 <div key={r._id} className="flex justify-between items-start gap-2 p-2 rounded-lg bg-slate-50">
@@ -190,7 +207,30 @@ function OverviewTab({ stats, loading, setTab }) {
             </div>
           )}
         </div>
+      </div>
 
+      {/* Recent User Reports */}
+      {userReports.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-medium text-slate-800">Recent User Reports</h3>
+            <button onClick={() => setTab("userReports")} className="text-sm text-slate-600 hover:text-slate-800">View all</button>
+          </div>
+          <div className="space-y-2">
+            {userReports.map((r) => (
+              <div key={r._id} className="flex justify-between items-start gap-2 p-2 rounded-lg bg-slate-50">
+                <div className="min-w-0">
+                  <p className="text-sm text-slate-700 truncate">{r.reportedUser?.name} reported by {r.reporter?.name}</p>
+                  <p className="text-xs text-slate-500 truncate">{r.reason}</p>
+                </div>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 flex-shrink-0">pending</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="grid md:grid-cols-2 gap-6">
         {/* Pending Therapists */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm md:col-span-2">
           <div className="flex items-center justify-between mb-4">
@@ -567,7 +607,7 @@ function ResourcesTab({ setError }) {
       }
       setShowForm(false);
       setEditing(null);
-      setForm({ type: "article", title: "", excerpt: "", content: "", category: "", icon: "", number: "", text: "", url: "", desc: "", steps: [], duration: "", description: "" });
+      setForm({ type: "article", title: "", excerpt: "", content: "", category: "", icon: "", number: "", text: "", url: "", desc: "", steps: [], duration: "", description: "", videoId: "", source: "" });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to save");
     }
@@ -584,11 +624,13 @@ function ResourcesTab({ setError }) {
           <option value="">All types</option>
           <option value="crisis">Crisis</option>
           <option value="article">Article</option>
+          <option value="video">Video</option>
           <option value="coping">Coping</option>
           <option value="breathing">Breathing</option>
+          <option value="link">Link</option>
         </select>
         <button
-          onClick={() => { setShowForm(true); setEditing(null); setForm({ type: "article", title: "", excerpt: "", content: "", category: "", icon: "", number: "", text: "", url: "", desc: "", steps: [], duration: "", description: "" }); }}
+          onClick={() => { setShowForm(true); setEditing(null); setForm({ type: "article", title: "", excerpt: "", content: "", category: "", icon: "", number: "", text: "", url: "", desc: "", steps: [], duration: "", description: "", videoId: "", source: "" }); }}
           className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white rounded-xl text-sm font-medium hover:bg-slate-700"
         >
           <Plus className="w-4 h-4" />
@@ -606,8 +648,10 @@ function ResourcesTab({ setError }) {
                 className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm">
                 <option value="crisis">Crisis</option>
                 <option value="article">Article</option>
+                <option value="video">Video</option>
                 <option value="coping">Coping</option>
                 <option value="breathing">Breathing</option>
+                <option value="link">Link</option>
               </select>
             </div>
             <div>
@@ -636,6 +680,14 @@ function ResourcesTab({ setError }) {
             <textarea value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })}
               rows={3} className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm" />
           </div>
+          {(form.type === "video" || form.type === "link") && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div><label className="block text-sm text-slate-600 mb-1">URL</label><input type="url" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://..." className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm" /></div>
+              {form.type === "video" && <div><label className="block text-sm text-slate-600 mb-1">YouTube Video ID (or paste full URL)</label><input type="text" value={form.videoId || ""} onChange={(e) => setForm({ ...form, videoId: e.target.value })} placeholder="dQw4w9WgXcQ" className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm" /></div>}
+              {form.type === "link" && <div><label className="block text-slate-600 mb-1">Source (e.g. app/podcast name)</label><input type="text" value={form.source || ""} onChange={(e) => setForm({ ...form, source: e.target.value })} placeholder="Headspace" className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm" /></div>}
+              <div><label className="block text-slate-600 mb-1">Duration (video only)</label><input type="text" value={form.duration || ""} onChange={(e) => setForm({ ...form, duration: e.target.value })} placeholder="5 min" className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm" /></div>
+            </div>
+          )}
           {(form.type === "crisis" || form.type === "coping" || form.type === "breathing") && (
             <div className="grid gap-4 sm:grid-cols-2">
               {form.type === "crisis" && (
@@ -680,7 +732,7 @@ function ResourcesTab({ setError }) {
                   <p className="text-xs text-slate-500 truncate">{r.excerpt || r.desc}</p>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => { setEditing(r); setForm({ type: r.type, title: r.title, excerpt: r.excerpt || "", content: r.content || "", category: r.category || "", icon: r.icon || "", number: r.number || "", text: r.text || "", url: r.url || "", desc: r.desc || "", steps: r.steps || [], duration: r.duration || "", description: r.description || "" }); setShowForm(true); }}
+                  <button onClick={() => { setEditing(r); setForm({ type: r.type, title: r.title, excerpt: r.excerpt || "", content: r.content || "", category: r.category || "", icon: r.icon || "", number: r.number || "", text: r.text || "", url: r.url || "", desc: r.desc || "", steps: r.steps || [], duration: r.duration || "", description: r.description || "", videoId: r.videoId || "", source: r.source || "" }); setShowForm(true); }}
                     className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100">
                     <Edit2 className="w-4 h-4" />
                   </button>
@@ -764,6 +816,112 @@ function ReportsTab({ setError }) {
                     <>
                       <button onClick={() => handleResolve(r._id, "resolved")} className="px-3 py-1 bg-green-100 text-green-800 rounded-lg text-sm">Resolve</button>
                       <button onClick={() => handleResolve(r._id, "dismissed")} className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-sm">Dismiss</button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function UserReportsTab({ setError }) {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [actionLoading, setActionLoading] = useState(null);
+
+  const loadReports = () => {
+    setLoading(true);
+    adminApi.getUserReports({ status: statusFilter || undefined })
+      .then(({ data }) => setReports(data.reports || []))
+      .catch((err) => setError(err.response?.data?.message || "Failed to load user reports"))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => loadReports(), [statusFilter]);
+
+  const handleResolve = async (reportId, status) => {
+    setError("");
+    setActionLoading(reportId);
+    try {
+      await adminApi.resolveUserReport(reportId, { status });
+      setReports((prev) => prev.map((r) => (r._id === reportId ? { ...r, status } : r)));
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to resolve");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  function formatDate(d) {
+    const date = new Date(d);
+    const now = new Date();
+    const diff = now - date;
+    if (diff < 60000) return "just now";
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    return date.toLocaleDateString();
+  }
+
+  return (
+    <div className="space-y-4">
+      <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+        className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white">
+        <option value="">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="resolved">Resolved</option>
+        <option value="dismissed">Dismissed</option>
+      </select>
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 text-slate-400 animate-spin" /></div>
+      ) : reports.length === 0 ? (
+        <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center">
+          <p className="text-slate-500">No user reports yet</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {reports.map((r) => (
+            <div
+              key={r._id}
+              className={`bg-white rounded-2xl p-5 border shadow-sm ${
+                r.status === "pending" ? "border-amber-200" : "border-slate-100"
+              }`}
+            >
+              <div className="flex justify-between items-start gap-4">
+                <div>
+                  <p className="font-medium text-slate-800">
+                    {r.reportedUser?.name || "Unknown"} reported by {r.reporter?.name || "Unknown"}
+                  </p>
+                  <p className="text-slate-600 text-sm mt-2">{r.reason}</p>
+                  <p className="text-xs text-slate-400 mt-2">{formatDate(r.createdAt)}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    r.status === "pending" ? "bg-amber-100 text-amber-800" :
+                    r.status === "resolved" ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-600"
+                  }`}>{r.status}</span>
+                  {r.status === "pending" && (
+                    <>
+                      <button
+                        onClick={() => handleResolve(r._id, "resolved")}
+                        disabled={actionLoading === r._id}
+                        className="p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 disabled:opacity-50"
+                        title="Resolve"
+                      >
+                        <Check size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleResolve(r._id, "dismissed")}
+                        disabled={actionLoading === r._id}
+                        className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-50"
+                        title="Dismiss"
+                      >
+                        <X size={18} />
+                      </button>
                     </>
                   )}
                 </div>
@@ -1006,12 +1164,18 @@ function AnalyticsTab({ setError }) {
     { label: "New users today", value: data?.usersToday ?? 0 },
     { label: "New users this week", value: data?.usersThisWeek ?? 0 },
     { label: "Mood logs today", value: data?.moodsToday ?? 0 },
-    { label: "Mood logs this week", value: data?.moodsThisWeek ?? 0 }
+    { label: "Mood logs this week", value: data?.moodsThisWeek ?? 0 },
+    { label: "Community posts today", value: data?.postsToday ?? 0 },
+    { label: "Community posts this week", value: data?.postsThisWeek ?? 0 },
+    { label: "Group chat messages today", value: data?.groupMessagesToday ?? 0 },
+    { label: "Group chat messages this week", value: data?.groupMessagesThisWeek ?? 0 },
+    { label: "Peer DM messages today", value: data?.peerMessagesToday ?? 0 },
+    { label: "Peer DM messages this week", value: data?.peerMessagesThisWeek ?? 0 }
   ];
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {cards.map((c) => (
           <div key={c.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
             <p className="text-sm text-slate-500">{c.label}</p>

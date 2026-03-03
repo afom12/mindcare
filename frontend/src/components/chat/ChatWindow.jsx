@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import ChatMessage from "./ChatMessage";
 import TypingIndicator from "./TypingIndicator";
 import CrisisAlert from "./CrisisAlert";
@@ -24,6 +25,16 @@ export default function ChatWindow({ messages, loading, loadingHistory, error, o
   return (
     <div className="space-y-4">
       {hasCrisisMessage && <CrisisAlert />}
+
+      {recentMood?.value <= 2 && !hasCrisisMessage && (
+        <Link
+          to="/resources"
+          className="block p-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 transition-colors"
+        >
+          <p className="text-sm font-medium">Based on your mood ({recentMood.label})</p>
+          <p className="text-xs text-slate-500 mt-0.5">Browse breathing exercises and coping strategies that might help →</p>
+        </Link>
+      )}
 
       {error && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-amber-800 text-sm flex items-center justify-between gap-4">

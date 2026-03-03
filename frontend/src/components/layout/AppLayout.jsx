@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import {
   LayoutDashboard,
   MessageCircle,
+  MessageSquare,
   Heart,
   BookOpen,
   Users,
@@ -11,6 +12,7 @@ import {
   LogOut,
   Menu,
   Shield,
+  ShieldCheck,
   Calendar,
   CalendarClock,
   UserCheck,
@@ -33,16 +35,25 @@ export default function AppLayout({ children }) {
     ...(user?.role !== "therapist" ? [{ name: "Assessments", href: "/assessments", icon: BarChart3 }] : []),
     { name: "Resources", href: "/resources", icon: BookOpen },
     { name: "Community", href: "/community", icon: Users },
+    ...(user ? [{ name: "Community Chat", href: "/community/chat", icon: MessageSquare }] : []),
     ...(user?.role === "user" ? [{ name: "Book Session", href: "/therapists", icon: UserCheck }] : []),
     { name: user?.role === "therapist" ? "My Sessions" : "My Bookings", href: "/bookings", icon: Calendar },
     ...(user?.role === "therapist"
       ? [
           { name: "Schedule", href: "/therapist/schedule", icon: CalendarClock },
-          { name: "My Clients", href: "/clients", icon: Users }
+          { name: "My Clients", href: "/clients", icon: Users },
+          { name: "Moderate Community", href: "/therapist/community", icon: ShieldCheck },
+          { name: "Moderate Chat", href: "/therapist/chat-moderation", icon: MessageSquare }
         ]
       : []),
     { name: "Messages", href: "/messages", icon: Mail },
-    ...(user?.role === "admin" ? [{ name: "Admin", href: "/admin", icon: Shield }] : [])
+    ...(user?.role === "admin"
+      ? [
+          { name: "Moderate Community", href: "/therapist/community", icon: ShieldCheck },
+          { name: "Moderate Chat", href: "/therapist/chat-moderation", icon: MessageSquare },
+          { name: "Admin", href: "/admin", icon: Shield }
+        ]
+      : [])
   ];
 
   const handleLogout = () => {

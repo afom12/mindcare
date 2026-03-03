@@ -4,7 +4,7 @@ const resourceSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ["crisis", "article", "coping", "breathing"],
+      enum: ["crisis", "article", "coping", "breathing", "video", "link"],
       required: true
     },
     category: {
@@ -35,7 +35,11 @@ const resourceSchema = new mongoose.Schema(
     // For breathing/coping: steps, duration, description
     steps: [String],
     duration: String,
-    description: String
+    description: String,
+    // For video: YouTube URL or video ID
+    videoId: String,
+    // For link: external URL (podcasts, articles, etc.)
+    source: String
   },
   { timestamps: true }
 );

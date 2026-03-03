@@ -9,11 +9,23 @@ const connectDB = async () => {
   }
 
   try {
-    await mongoose.connect(uri);
+    const options = {};
+    if (uri.includes("mongodb.net")) {
+      options.autoSelectFamily = false;
+      options.family = 4;
+    }
+    await mongoose.connect(uri, options);
     console.log("MongoDB Connected Successfully");
   } catch (error) {
     console.error("Database connection failed:", error.message);
-    if (error.message.includes("bad auth") || error.message.includes("Authentication failed")) {
+    if (error.message.includes("TLSV1_ALERT") || error.message.includes("ERR_SSL")) {
+      console.error("\n--- MongoDB Atlas TLS Fix ---");
+      console.error("Atlas SSL handshake failed. Try:");
+      console.error("1. Disable VPN if running");
+      console.error("2. Use local MongoDB: MONGO_URI=mongodb://localhost:27017/mindcare-ai");
+      console.error("3. Install MongoDB locally: https://www.mongodb.com/try/download/community");
+      console.error("------------------------\n");
+    } else if (error.message.includes("bad auth") || error.message.includes("Authentication failed")) {
       console.error("\n--- MongoDB Auth Fix ---");
       console.error("1. Check username & password in MONGO_URI in .env");
       console.error("2. If password has special chars (@ # $ etc), URL-encode them:");

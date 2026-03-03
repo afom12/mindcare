@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AppLayout from "../components/layout/AppLayout";
 import { assessmentApi } from "../api/assessmentApi";
+import { offlineStorage } from "../utils/offlineStorage";
+import { PHQ9_QUESTIONS, GAD7_QUESTIONS, getSeverityLabel as getSeverity } from "../data/assessmentQuestions";
 import {
   BarChart3,
   Loader2,
@@ -14,6 +16,11 @@ import {
 
 const SCALE_LABELS = ["Not at all", "Several days", "More than half the days", "Nearly every day"];
 
+const isOfflineError = (err) =>
+  !navigator.onLine ||
+  err?.message === "Network Error" ||
+  err?.code === "ERR_NETWORK";
+
 export default function Assessments() {
   const [view, setView] = useState("menu"); // menu | take | result | progress
   const [type, setType] = useState(null); // phq9 | gad7
@@ -25,6 +32,8 @@ export default function Assessments() {
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState("");
 
+  const getStaticQuestions = (t) => (t === "phq9" ? PHQ9_QUESTIONS : GAD7_QUESTIONS);
+
   const loadQuestions = async (t) => {
     setLoading(true);
     setError("");
@@ -35,7 +44,15 @@ export default function Assessments() {
       setType(t);
       setView("take");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to load assessment");
+      if (isOfflineError(err)) {
+        const q = getStaticQuestions(t);
+        setQuestions(q);
+        setAnswers(new Array(q.length).fill(null));
+        setType(t);
+        setView("take");
+      } else {
+        setError(err.response?.data?.message || "Failed to load assessment");
+      }
     } finally {
       setLoading(false);
     }
@@ -53,7 +70,15 @@ export default function Assessments() {
       setResult(data.assessment);
       setView("result");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to submit");
+      if (isOfflineError(err)) {
+        offlineStorage.addAssessmentToQueue(type, answers);
+        const score = answers.reduce((s, a) => s + a, 0);
+        setResult({ score, severity: getSeverity(score, type), pending: true });
+        setPendingAssessment(true);
+        setView("result");
+      } else {
+        setError(err.response?.data?.message || "Failed to submit");
+      }
     } finally {
       setLoading(false);
     }
@@ -77,6 +102,12 @@ export default function Assessments() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const onSynced = () => {};
+    window.addEventListener("mindcare:assessmentSynced", onSynced);
+    return () => window.removeEventListener("mindcare:assessmentSynced", onSynced);
+  }, []);
 
   const getSeverityColor = (severity) => {
     if (!severity) return "bg-slate-100 text-slate-600";
@@ -250,6 +281,11 @@ export default function Assessments() {
 
           {view === "result" && result && (
             <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+              {result.pending && (
+                <p className="mb-4 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm">
+                  Saved offline. Will sync when you reconnect.
+                </p>
+              )}
               <h2 className="text-lg font-medium text-slate-800 mb-4">Your results</h2>
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center">
@@ -268,13 +304,15 @@ export default function Assessments() {
                   : "GAD-7 scores range from 0–21. Higher scores indicate more anxiety symptoms."}
               </p>
               <div className="flex gap-3">
-                <button
-                  onClick={() => loadProgress(type)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 text-white rounded-xl font-medium hover:bg-slate-700"
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  View progress
-                </button>
+                {!result.pending && (
+                  <button
+                    onClick={() => loadProgress(type)}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 text-white rounded-xl font-medium hover:bg-slate-700"
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                    View progress
+                  </button>
+                )}
                 <button
                   onClick={() => setView("menu")}
                   className="px-4 py-3 border border-slate-200 rounded-xl text-slate-700 hover:bg-slate-50"

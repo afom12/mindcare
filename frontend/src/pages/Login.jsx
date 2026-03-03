@@ -51,7 +51,7 @@ export default function Login() {
             welcome back.
           </h1>
           <p className="text-lg text-slate-500 max-w-sm leading-relaxed">
-            we&apos;ve missed you — continue where you left off
+            we&apos;ve missed you continue where you left off
           </p>
         </div>
       </div>

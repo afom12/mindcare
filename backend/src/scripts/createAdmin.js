@@ -17,8 +17,13 @@ async function createAdmin() {
 
   const existing = await User.findOne({ email });
   if (existing) {
-    const updated = await User.findByIdAndUpdate(existing._id, { role: "admin" }, { new: true });
-    console.log("Existing user promoted to admin:", updated.email);
+    const hashed = await bcrypt.hash(password, 10);
+    const updated = await User.findByIdAndUpdate(
+      existing._id,
+      { role: "admin", password: hashed },
+      { new: true }
+    );
+    console.log("Existing user promoted to admin:", updated.email, "(password updated)");
     process.exit(0);
   }
 

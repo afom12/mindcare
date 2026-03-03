@@ -46,6 +46,16 @@ export const requireAdmin = async (req, res, next) => {
   next();
 };
 
+export const requireTherapistOrAdmin = async (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Not authorized." });
+  }
+  if (req.user.role !== "therapist" && req.user.role !== "admin") {
+    return res.status(403).json({ message: "Therapist or admin access required." });
+  }
+  next();
+};
+
 export const optionalAuth = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.startsWith("Bearer ")

@@ -9,7 +9,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["mood_reminder", "crisis_resources", "general"],
+      enum: ["mood_reminder", "crisis_resources", "chat_message", "general"],
       default: "general"
     },
     title: {

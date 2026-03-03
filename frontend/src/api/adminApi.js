@@ -16,6 +16,10 @@ export const adminApi = {
   getReports: (params) => API.get("/v1/admin/reports", { params }),
   resolveReport: (id, data) => API.post(`/v1/admin/reports/${id}/resolve`, data),
 
+  getUserReports: (params) => API.get("/v1/community-chat/moderation/user-reports", { params }),
+  resolveUserReport: (reportId, data) =>
+    API.put(`/v1/community-chat/moderation/user-reports/${reportId}/resolve`, data),
+
   getCrisisAlerts: (params) => API.get("/v1/admin/crisis-alerts", { params }),
 
   getPendingTherapists: () => API.get("/v1/admin/pending-therapists"),

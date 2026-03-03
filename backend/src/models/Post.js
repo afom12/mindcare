@@ -26,6 +26,27 @@ const postSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending"
+    },
+    group: {
+      type: String,
+      default: "general",
+      trim: true
+    },
+    crisisFlag: {
+      type: Boolean,
+      default: false
+    },
+    crisisLevel: {
+      type: String,
+      enum: ["low", "medium", "high", "critical"],
+      default: null
+    },
+    crisisDetectedAt: { type: Date, default: null },
+    crisisCategory: { type: String, default: null },
+    pinnedComment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+      default: null
     }
   },
   { timestamps: true }
@@ -33,6 +54,7 @@ const postSchema = new mongoose.Schema(
 
 postSchema.index({ status: 1 });
 postSchema.index({ createdAt: -1 });
+postSchema.index({ group: 1, status: 1 });
 
 const Post = mongoose.model("Post", postSchema);
 

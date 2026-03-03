@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { moodApi } from "../api/moodApi";
+import { offlineStorage } from "../utils/offlineStorage";
 
 const MOOD_OPTIONS = [
   { value: 5, label: "Great" },
@@ -9,6 +10,11 @@ const MOOD_OPTIONS = [
   { value: 1, label: "Struggling" }
 ];
 
+const isOfflineError = (err) =>
+  !navigator.onLine ||
+  err?.message === "Network Error" ||
+  err?.code === "ERR_NETWORK";
+
 const MoodContext = createContext(null);
 
 export const MoodProvider = ({ children }) => {
@@ -16,6 +22,7 @@ export const MoodProvider = ({ children }) => {
   const [stats, setStats] = useState({ total: 0, thisWeek: 0, averageThisWeek: null });
   const [loading, setLoading] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
 
   const loadMoodHistory = useCallback(async () => {
     const token = localStorage.getItem("token");
@@ -25,11 +32,11 @@ export const MoodProvider = ({ children }) => {
     }
     setLoadingHistory(true);
     try {
-      const { data } = await moodApi.getHistory({ limit: 30, days: 7 });
+      const { data } = await moodApi.getHistory({ limit: 50, days: 14 });
       setMoods(data.moods || []);
       setStats(data.stats || { total: 0, thisWeek: 0, averageThisWeek: null });
     } catch (err) {
-      console.error("Failed to load mood history:", err);
+      if (!isOfflineError(err)) console.error("Failed to load mood history:", err);
       setMoods([]);
     } finally {
       setLoadingHistory(false);
@@ -38,6 +45,16 @@ export const MoodProvider = ({ children }) => {
 
   useEffect(() => {
     loadMoodHistory();
+    setPendingCount(offlineStorage.getMoodQueue().length);
+  }, [loadMoodHistory]);
+
+  useEffect(() => {
+    const onSynced = () => {
+      loadMoodHistory();
+      setPendingCount(offlineStorage.getMoodQueue().length);
+    };
+    window.addEventListener("mindcare:moodSynced", onSynced);
+    return () => window.removeEventListener("mindcare:moodSynced", onSynced);
   }, [loadMoodHistory]);
 
   const logMood = useCallback(async (value, note = "") => {
@@ -48,6 +65,11 @@ export const MoodProvider = ({ children }) => {
       await loadMoodHistory();
       return data.mood;
     } catch (err) {
+      if (isOfflineError(err)) {
+        offlineStorage.addMoodToQueue(value, note);
+        setPendingCount(offlineStorage.getMoodQueue().length);
+        return { value, label: MOOD_OPTIONS.find((o) => o.value === value)?.label || "Saved", pending: true };
+      }
       console.error("Failed to log mood:", err);
       return null;
     } finally {
@@ -64,6 +86,7 @@ export const MoodProvider = ({ children }) => {
         loadingHistory,
         logMood,
         loadMoodHistory,
+        pendingCount,
         MOOD_OPTIONS
       }}
     >

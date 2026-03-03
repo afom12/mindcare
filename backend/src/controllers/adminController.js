@@ -6,6 +6,9 @@ import Chat from "../models/Chat.js";
 import CrisisEvent from "../models/CrisisEvent.js";
 import Notification from "../models/Notification.js";
 import Report from "../models/Report.js";
+import UserReport from "../models/UserReport.js";
+import CommunityGroupMessage from "../models/CommunityGroupMessage.js";
+import PeerMessage from "../models/PeerMessage.js";
 
 export const getUsers = async (req, res) => {
   try {
@@ -88,8 +91,11 @@ export const getStats = async (req, res) => {
       totalChats,
       totalNotifications,
       pendingReports,
+      pendingUserReports,
       pendingTherapists,
-      crisisAlertsToday
+      crisisAlertsToday,
+      communityGroupMessages,
+      peerMessages
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ role: "admin" }),
@@ -101,8 +107,11 @@ export const getStats = async (req, res) => {
       Chat.countDocuments(),
       Notification.countDocuments(),
       Report.countDocuments({ status: "pending" }),
+      UserReport.countDocuments({ status: "pending" }),
       User.countDocuments({ role: "therapist", therapistVerification: "pending" }),
-      CrisisEvent.countDocuments({ createdAt: { $gte: todayStart } })
+      CrisisEvent.countDocuments({ createdAt: { $gte: todayStart } }),
+      CommunityGroupMessage.countDocuments({ hidden: { $ne: true } }),
+      PeerMessage.countDocuments({ hidden: { $ne: true } })
     ]);
 
     res.json({
@@ -116,8 +125,11 @@ export const getStats = async (req, res) => {
       totalChats,
       totalNotifications,
       pendingReports,
+      pendingUserReports,
       pendingTherapists,
-      crisisAlertsToday
+      crisisAlertsToday,
+      communityGroupMessages,
+      peerMessages
     });
   } catch (error) {
     console.error("GET STATS ERROR:", error);
@@ -344,11 +356,28 @@ export const getAnalytics = async (req, res) => {
     const weekStart = new Date(todayStart);
     weekStart.setDate(weekStart.getDate() - 7);
 
-    const [usersToday, usersThisWeek, moodsToday, moodsThisWeek] = await Promise.all([
+    const [
+      usersToday,
+      usersThisWeek,
+      moodsToday,
+      moodsThisWeek,
+      postsToday,
+      postsThisWeek,
+      groupMessagesToday,
+      groupMessagesThisWeek,
+      peerMessagesToday,
+      peerMessagesThisWeek
+    ] = await Promise.all([
       User.countDocuments({ createdAt: { $gte: todayStart } }),
       User.countDocuments({ createdAt: { $gte: weekStart } }),
       Mood.countDocuments({ createdAt: { $gte: todayStart } }),
-      Mood.countDocuments({ createdAt: { $gte: weekStart } })
+      Mood.countDocuments({ createdAt: { $gte: weekStart } }),
+      Post.countDocuments({ createdAt: { $gte: todayStart }, status: "approved" }),
+      Post.countDocuments({ createdAt: { $gte: weekStart }, status: "approved" }),
+      CommunityGroupMessage.countDocuments({ createdAt: { $gte: todayStart }, hidden: { $ne: true } }),
+      CommunityGroupMessage.countDocuments({ createdAt: { $gte: weekStart }, hidden: { $ne: true } }),
+      PeerMessage.countDocuments({ createdAt: { $gte: todayStart }, hidden: { $ne: true } }),
+      PeerMessage.countDocuments({ createdAt: { $gte: weekStart }, hidden: { $ne: true } })
     ]);
 
     const moodDistribution = await Mood.aggregate([
@@ -362,6 +391,12 @@ export const getAnalytics = async (req, res) => {
       usersThisWeek,
       moodsToday,
       moodsThisWeek,
+      postsToday,
+      postsThisWeek,
+      groupMessagesToday,
+      groupMessagesThisWeek,
+      peerMessagesToday,
+      peerMessagesThisWeek,
       moodDistribution: moodDistribution.reduce((acc, m) => ({ ...acc, [m._id]: m.count }), {})
     });
   } catch (error) {
@@ -390,9 +425,21 @@ export const getResourcesAdmin = async (req, res) => {
   }
 };
 
+function extractYouTubeId(str) {
+  if (!str || typeof str !== "string") return null;
+  const trimmed = str.trim();
+  if (trimmed.length === 11 && !trimmed.includes("/")) return trimmed;
+  const match = trimmed.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : trimmed;
+}
+
 export const createResource = async (req, res) => {
   try {
-    const resource = await Resource.create(req.body);
+    const body = { ...req.body };
+    if (body.type === "video" && body.videoId) {
+      body.videoId = extractYouTubeId(body.videoId);
+    }
+    const resource = await Resource.create(body);
     res.status(201).json({ resource });
   } catch (error) {
     console.error("CREATE RESOURCE ERROR:", error);
@@ -403,7 +450,11 @@ export const createResource = async (req, res) => {
 export const updateResource = async (req, res) => {
   try {
     const { id } = req.params;
-    const resource = await Resource.findByIdAndUpdate(id, req.body, { new: true });
+    const body = { ...req.body };
+    if (body.type === "video" && body.videoId) {
+      body.videoId = extractYouTubeId(body.videoId);
+    }
+    const resource = await Resource.findByIdAndUpdate(id, body, { new: true });
     if (!resource) return res.status(404).json({ message: "Resource not found" });
     res.json({ resource });
   } catch (error) {
