@@ -20,6 +20,7 @@ import {
   BarChart3
 } from "lucide-react";
 import NotificationBell from "../NotificationBell";
+import ApiStatus from "../ApiStatus";
 
 export default function AppLayout({ children }) {
   const { user, logout } = useAuth();
@@ -63,6 +64,7 @@ export default function AppLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <ApiStatus />
       {/* Top Navigation Bar */}
       <header className="bg-white border-b border-slate-100 fixed top-0 left-0 right-0 z-30">
         <div className="px-4 sm:px-6 lg:px-8">

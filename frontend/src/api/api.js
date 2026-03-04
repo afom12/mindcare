@@ -19,6 +19,12 @@ API.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
+      const url = err.config?.url || "";
+      const softEndpoints = ["/notifications", "/mood"];
+      const isSoft = softEndpoints.some((e) => url.includes(e));
+      if (isSoft) {
+        return Promise.reject(err);
+      }
       const isAuthPage = window.location.pathname === "/login" || window.location.pathname === "/register";
       if (!isAuthPage) {
         localStorage.removeItem("token");

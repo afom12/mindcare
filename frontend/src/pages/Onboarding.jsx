@@ -147,7 +147,7 @@ export default function Onboarding() {
                 <div className="space-y-4">
                   <p className="text-slate-600 text-lg leading-relaxed">
                     {index === 0 &&
-                      "thoughts floating like clouds — here, they can simply drift by."}
+                      "thoughts floating like clouds here, they can simply drift by."}
                     {index === 1 &&
                       "no judgment, no rush. just someone (something?) who listens."}
                     {index === 2 &&

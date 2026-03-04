@@ -21,7 +21,7 @@ import { resourceApi } from "../api/resourceApi";
 import { useAuth } from "../context/AuthContext";
 import { useMood } from "../context/MoodContext";
 import { offlineStorage } from "../utils/offlineStorage";
-import { CRISIS_RESOURCES_OFFLINE, BREATHING_OFFLINE, COPING_OFFLINE } from "../data/crisisResources";
+import { CRISIS_RESOURCES_OFFLINE, BREATHING_OFFLINE, COPING_OFFLINE, VIDEOS_OFFLINE, LINKS_OFFLINE, ARTICLES_OFFLINE } from "../data/crisisResources";
 
 const TYPE_TABS = [
   { id: "", label: "All", icon: Sparkles },
@@ -302,7 +302,10 @@ export default function Resources() {
         const offline = [
           ...CRISIS_RESOURCES_OFFLINE,
           ...BREATHING_OFFLINE,
-          ...COPING_OFFLINE
+          ...COPING_OFFLINE,
+          ...VIDEOS_OFFLINE,
+          ...LINKS_OFFLINE,
+          ...ARTICLES_OFFLINE
         ].map((r, i) => ({ ...r, _id: `offline-${i}` }));
         setResources(offline);
         setCategories([...new Set(offline.map((r) => r.category).filter(Boolean))]);
