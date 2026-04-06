@@ -16,6 +16,7 @@ import {
   Calendar,
   CalendarClock,
   UserCheck,
+  UserPlus,
   Mail,
   BarChart3
 } from "lucide-react";
@@ -42,6 +43,7 @@ export default function AppLayout({ children }) {
     ...(user?.role === "therapist"
       ? [
           { name: "Schedule", href: "/therapist/schedule", icon: CalendarClock },
+          { name: "Student requests", href: "/therapist/requests", icon: UserPlus },
           { name: "My Clients", href: "/clients", icon: Users },
           { name: "Moderate Community", href: "/therapist/community", icon: ShieldCheck },
           { name: "Moderate Chat", href: "/therapist/chat-moderation", icon: MessageSquare }

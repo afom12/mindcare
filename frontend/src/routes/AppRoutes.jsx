@@ -27,6 +27,7 @@ import AdminRoute from "../components/AdminRoute";
 import TherapistRoute from "../components/TherapistRoute";
 import TherapistOrAdminRoute from "../components/TherapistOrAdminRoute";
 import TherapistSchedule from "../pages/TherapistSchedule";
+import TherapistPendingRequests from "../pages/TherapistPendingRequests";
 import ClientList from "../pages/ClientList";
 import ClientDetail from "../pages/ClientDetail";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
@@ -165,6 +166,14 @@ export default function AppRoutes() {
         element={
           <TherapistRoute>
             <TherapistSchedule />
+          </TherapistRoute>
+        }
+      />
+      <Route
+        path="/therapist/requests"
+        element={
+          <TherapistRoute>
+            <TherapistPendingRequests />
           </TherapistRoute>
         }
       />

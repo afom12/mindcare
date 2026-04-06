@@ -9,5 +9,8 @@ export const therapistApi = {
   deleteBlockedSlot: (id) => API.delete(`/v1/therapist/blocked-slots/${id}`),
   getClients: (params) => API.get("/v1/therapist/clients", { params }),
   getClientDetail: (clientId) => API.get(`/v1/therapist/clients/${clientId}`),
-  updateProfile: (data) => API.patch("/v1/therapist/profile", data)
+  updateProfile: (data) => API.patch("/v1/therapist/profile", data),
+  /** Mobile app parity: pending student requests */
+  getPendingAssignments: () => API.get("/v1/therapist/pending-assignments"),
+  acceptAssignment: (assignmentId) => API.post(`/v1/therapist/assignments/${assignmentId}/accept`)
 };

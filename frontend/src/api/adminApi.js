@@ -32,5 +32,9 @@ export const adminApi = {
   deleteResource: (id) => API.delete(`/v1/admin/resources/${id}`),
 
   getHealth: () => API.get("/v1/admin/health"),
-  getAnalytics: () => API.get("/v1/admin/analytics")
+  getAnalytics: () => API.get("/v1/admin/analytics"),
+
+  getTherapistAssignments: (params) => API.get("/v1/admin/therapist-assignments", { params }),
+  assignTherapistToStudent: (assignmentId, therapistId) =>
+    API.post(`/v1/admin/therapist-assignments/${assignmentId}/assign`, { therapistId })
 };

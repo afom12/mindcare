@@ -23,6 +23,7 @@ import {
   getAdminHealth,
   getAnalytics
 } from "../controllers/adminController.js";
+import { adminListAssignments, adminAssignStudent } from "../controllers/therapistStudentController.js";
 import { protectRoute, requireAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -49,6 +50,9 @@ router.get("/admin/crisis-alerts", getCrisisAlerts);
 router.get("/admin/pending-therapists", getPendingTherapists);
 router.post("/admin/therapists/:id/verify", verifyTherapist);
 router.post("/admin/therapists/:id/reject", rejectTherapist);
+
+router.get("/admin/therapist-assignments", adminListAssignments);
+router.post("/admin/therapist-assignments/:assignmentId/assign", adminAssignStudent);
 
 router.get("/admin/resources", getResourcesAdmin);
 router.post("/admin/resources", createResource);

@@ -48,7 +48,9 @@ export const registerUser = async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       token,
-      user: userResponse
+      access_token: token,
+      user: userResponse,
+      data: { token, access_token: token, user: userResponse }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -117,7 +119,9 @@ export const registerTherapist = async (req, res) => {
     res.status(201).json({
       message: "Registration submitted. Your credentials will be reviewed.",
       token,
-      user: userResponse
+      access_token: token,
+      user: userResponse,
+      data: { token, access_token: token, user: userResponse }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -153,7 +157,9 @@ export const loginUser = async (req, res) => {
     res.json({
       message: "Login successful",
       token,
-      user: userResponse
+      access_token: token,
+      user: userResponse,
+      data: { token, access_token: token, user: userResponse }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

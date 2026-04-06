@@ -1,6 +1,7 @@
 import Booking from "../models/Booking.js";
 import Mood from "../models/Mood.js";
 import User from "../models/User.js";
+import TherapistAssignment from "../models/TherapistAssignment.js";
 import Availability from "../models/Availability.js";
 import BlockedSlot from "../models/BlockedSlot.js";
 
@@ -259,12 +260,36 @@ export const getClients = async (req, res) => {
       }
     }
 
-    let clients = Array.from(clientMap.values()).map((c) => ({
+    const assignmentLinks = await TherapistAssignment.find({
+      therapistId,
+      status: "assigned"
+    })
+      .populate("studentId", "name email")
+      .lean();
+
+    for (const a of assignmentLinks) {
+      const st = a.studentId;
+      const uid = (st?._id || st)?.toString();
+      if (!uid) continue;
+      if (!clientMap.has(uid)) {
+        clientMap.set(uid, {
+          id: uid,
+          name: st?.name || "Client",
+          email: st?.email || "",
+          sessions: [],
+          lastSession: null,
+          fromAssignment: true
+        });
+      }
+    }
+
+    clients = Array.from(clientMap.values()).map((c) => ({
       id: c.id,
       name: c.name,
       email: c.email,
       sessionCount: c.sessions.length,
-      lastSession: c.lastSession
+      lastSession: c.lastSession,
+      fromAssignment: !!c.fromAssignment
     }));
 
     if (search && search.trim()) {
@@ -294,7 +319,13 @@ export const getClientDetail = async (req, res) => {
       .sort({ scheduledAt: -1 })
       .lean();
 
-    if (bookings.length === 0) {
+    const assignmentOnly = await TherapistAssignment.findOne({
+      therapistId,
+      studentId: clientId,
+      status: "assigned"
+    }).lean();
+
+    if (bookings.length === 0 && !assignmentOnly) {
       return res.status(404).json({ message: "Client not found" });
     }
 

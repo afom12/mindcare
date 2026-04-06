@@ -10,6 +10,14 @@ import {
   getClientDetail,
   updateTherapistProfile
 } from "../controllers/therapistController.js";
+import {
+  requestTherapistSupport,
+  getTherapistConnectionStatus,
+  getTherapistThreadMessages,
+  postTherapistThreadMessage,
+  listPendingAssignments,
+  acceptAssignment
+} from "../controllers/therapistStudentController.js";
 import { protectRoute } from "../middleware/authMiddleware.js";
 
 const therapistOnly = (req, res, next) => {
@@ -19,9 +27,24 @@ const therapistOnly = (req, res, next) => {
   next();
 };
 
+const studentOnly = (req, res, next) => {
+  if (req.user.role !== "user") {
+    return res.status(403).json({ message: "Student access only" });
+  }
+  next();
+};
+
 const router = express.Router();
 
 router.use(protectRoute);
+
+/** Mobile + web: therapist assignment & human thread (same DB as /conversations) */
+router.post("/request", studentOnly, requestTherapistSupport);
+router.get("/status", studentOnly, getTherapistConnectionStatus);
+router.get("/messages", getTherapistThreadMessages);
+router.post("/messages", postTherapistThreadMessage);
+router.get("/pending-assignments", therapistOnly, listPendingAssignments);
+router.post("/assignments/:assignmentId/accept", therapistOnly, acceptAssignment);
 
 router.get("/dashboard", therapistOnly, getDashboard);
 router.get("/availability", therapistOnly, getAvailability);

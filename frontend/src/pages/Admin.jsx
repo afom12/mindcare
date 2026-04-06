@@ -15,6 +15,7 @@ import {
   BarChart3,
   Flag,
   UserCheck,
+  Inbox,
   Activity,
   FileText,
   AlertTriangle,
@@ -33,6 +34,7 @@ const TABS = [
   { id: "userReports", label: "User Reports", icon: UserX },
   { id: "crisis", label: "Crisis Alerts", icon: AlertTriangle },
   { id: "therapists", label: "Therapists", icon: UserCheck },
+  { id: "therapistAssignments", label: "Therapist assign.", icon: Inbox },
   { id: "resources", label: "Resources", icon: BookOpen },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
   { id: "system", label: "System Health", icon: Activity }
@@ -93,6 +95,7 @@ export default function Admin() {
           {tab === "userReports" && <UserReportsTab setError={setError} />}
           {tab === "crisis" && <CrisisAlertsTab setError={setError} />}
           {tab === "therapists" && <TherapistsTab setError={setError} />}
+          {tab === "therapistAssignments" && <TherapistAssignmentsTab setError={setError} />}
           {tab === "resources" && <ResourcesTab setError={setError} />}
           {tab === "analytics" && <AnalyticsTab setError={setError} />}
           {tab === "system" && <SystemTab setError={setError} />}
@@ -1194,6 +1197,114 @@ function AnalyticsTab({ setError }) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TherapistAssignmentsTab({ setError }) {
+  const [assignments, setAssignments] = useState([]);
+  const [therapists, setTherapists] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [assigning, setAssigning] = useState(null);
+  const [selectedTherapist, setSelectedTherapist] = useState({});
+
+  useEffect(() => {
+    setError("");
+    Promise.all([
+      adminApi.getTherapistAssignments({}),
+      adminApi.getUsers({ role: "therapist", limit: 100 })
+    ])
+      .then(([aRes, uRes]) => {
+        setAssignments(aRes.data.assignments || []);
+        setTherapists(
+          (uRes.data.users || []).filter(
+            (t) => t.therapistVerification === "verified" && t.status === "active"
+          )
+        );
+      })
+      .catch((err) => setError(err.response?.data?.message || "Failed to load assignments"))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const pending = assignments.filter((a) => a.status === "pending");
+
+  const handleAssign = async (assignmentId) => {
+    const therapistId = selectedTherapist[assignmentId];
+    if (!therapistId) {
+      setError("Select a therapist first");
+      return;
+    }
+    setAssigning(assignmentId);
+    setError("");
+    try {
+      await adminApi.assignTherapistToStudent(assignmentId, therapistId);
+      setAssignments((prev) => prev.map((a) => (a.id === assignmentId ? { ...a, status: "assigned" } : a)));
+    } catch (err) {
+      setError(err.response?.data?.message || "Assign failed");
+    } finally {
+      setAssigning(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-slate-500">
+        Pending mobile app requests. Assign a verified therapist, or let therapists accept from their dashboard.
+      </p>
+      {pending.length === 0 ? (
+        <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center text-slate-500">
+          No pending therapist requests
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {pending.map((a) => (
+            <div
+              key={a.id}
+              className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-end gap-4 justify-between"
+            >
+              <div>
+                <p className="font-medium text-slate-800">{a.studentName || "Student"}</p>
+                <p className="text-sm text-slate-500">{a.studentEmail}</p>
+                <p className="text-xs text-slate-400 mt-1">
+                  {a.createdAt ? new Date(a.createdAt).toLocaleString() : ""}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={selectedTherapist[a.id] || ""}
+                  onChange={(e) =>
+                    setSelectedTherapist((prev) => ({ ...prev, [a.id]: e.target.value }))
+                  }
+                  className="px-3 py-2 border border-slate-200 rounded-xl text-sm bg-white min-w-[200px]"
+                >
+                  <option value="">Select therapist…</option>
+                  {therapists.map((t) => (
+                    <option key={t._id} value={t._id}>
+                      {t.name} ({t.email})
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => handleAssign(a.id)}
+                  disabled={assigning === a.id}
+                  className="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-medium hover:bg-slate-700 disabled:opacity-60"
+                >
+                  {assigning === a.id ? <Loader2 className="w-4 h-4 animate-spin inline" /> : "Assign"}
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
